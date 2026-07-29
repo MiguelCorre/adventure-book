@@ -1,0 +1,58 @@
+<article class="card" [class.card--invalid]="!book().valid">
+  <header class="card__head">
+    <h3 class="card__title">{{ book().title }}</h3>
+    @if (book().author) {
+      <p class="card__author">by {{ book().author }}</p>
+    }
+  </header>
+
+  <div class="card__badges">
+    @if (book().difficulty) {
+      <span class="badge" [class]="difficultyClass()">{{ book().difficulty }}</span>
+    }
+    <span class="badge badge--neutral">{{ book().sectionCount }} sections</span>
+    @if (!book().valid) {
+      <span class="badge badge--invalid">Unplayable</span>
+    }
+    @if (book().hasSave) {
+      <span class="badge badge--neutral">Saved</span>
+    }
+  </div>
+
+  @if (!book().valid) {
+    <div class="card__issues">
+      <button type="button" class="card__issues-toggle" (click)="toggleIssues()"
+              [attr.aria-expanded]="issuesExpanded()">
+        {{ issuesExpanded() ? 'Hide' : 'Show' }}
+        {{ book().issues.length }}
+        {{ book().issues.length === 1 ? 'problem' : 'problems' }}
+      </button>
+      @if (issuesExpanded()) {
+        <ul class="card__issue-list">
+          @for (issue of book().issues; track issue.rule + issue.sectionId + issue.message) {
+            <li>
+              {{ issue.message }}
+              @if (issue.sectionId) {
+                <span class="card__issue-section">section {{ issue.sectionId }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+  <div class="card__actions">
+    <button type="button" class="button button--primary card__begin"
+            [disabled]="!book().valid"
+            [attr.title]="book().valid ? null : 'This book has problems that make it impossible to finish'"
+            (click)="begin.emit(book())">
+      Begin Quest
+    </button>
+    @if (book().valid && book().hasSave) {
+      <button type="button" class="button button--ghost card__continue" (click)="continueQuest.emit(book())">
+        Continue
+      </button>
+    }
+  </div>
+</article>

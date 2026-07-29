@@ -1,0 +1,133 @@
+.hero {
+  padding: 3rem 1.5rem 2.5rem;
+  background: linear-gradient(160deg, var(--surface-banner-accent), var(--surface-banner));
+  color: var(--ink-inverse);
+  text-align: center;
+}
+
+.hero__title {
+  color: var(--gold-bright);
+  font-size: clamp(2rem, 5vw, 2.9rem);
+  letter-spacing: 0.01em;
+
+  &::before,
+  &::after {
+    content: '✦';
+    margin: 0 0.6rem;
+    font-size: 0.6em;
+    vertical-align: middle;
+    opacity: 0.85;
+  }
+}
+
+.hero__blurb {
+  max-width: 46rem;
+  margin: 0.9rem auto 0;
+  color: color-mix(in srgb, var(--ink-inverse) 88%, transparent);
+}
+
+.hero__count {
+  margin: 1.1rem 0 0;
+  color: var(--gold-bright);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.library {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.library__title {
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.library__intro {
+  max-width: 38rem;
+  margin: 0.6rem auto 0;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.library__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 1.75rem 0 2rem;
+}
+
+.library__search input {
+  width: min(26rem, 90vw);
+  padding: 0.6rem 0.9rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.library__filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.library__filters-label {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.chip {
+  padding: 0.2rem 0.7rem;
+  background: var(--surface-sunken);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background-color 120ms ease;
+}
+
+.chip:hover {
+  background: color-mix(in srgb, var(--gold) 20%, var(--surface-sunken));
+}
+
+.chip--active {
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  color: #2f2418;
+}
+
+.library__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--invalid-bg);
+  border-radius: var(--radius-sm);
+  color: var(--invalid-ink);
+}
+
+.library__status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 0;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.library__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1.25rem;
+}

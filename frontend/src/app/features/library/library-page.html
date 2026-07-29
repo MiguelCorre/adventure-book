@@ -1,0 +1,71 @@
+<header class="hero">
+  <h1 class="hero__title">Adventure Awaits</h1>
+  <p class="hero__blurb">
+    Embark on epic quests where every choice shapes your destiny. Explore mystical realms,
+    solve ancient mysteries, and become the hero of your own story.
+  </p>
+  <p class="hero__count">
+    {{ books().length }} {{ books().length === 1 ? 'adventure' : 'adventures' }} available
+  </p>
+</header>
+
+<main class="library">
+  <h2 class="library__title">The Adventure Library</h2>
+  <p class="library__intro">
+    Choose your next adventure from our collection of interactive tales. Each book offers
+    unique paths and multiple endings based on your choices.
+  </p>
+
+  <div class="library__controls">
+    <label class="library__search">
+      <span class="visually-hidden">Search adventures</span>
+      <input
+        type="search"
+        placeholder="Search adventures..."
+        [value]="query()"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </label>
+
+    <div class="library__filters" role="group" aria-label="Filter by difficulty">
+      <span class="library__filters-label">Filters:</span>
+      @for (difficulty of difficulties; track difficulty) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="isSelected(difficulty)"
+          [attr.aria-pressed]="isSelected(difficulty)"
+          (click)="toggleDifficulty(difficulty)"
+        >
+          {{ difficulty }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="library__error" role="alert">
+      {{ error() }}
+      <button type="button" class="button button--ghost" (click)="reload()">Try again</button>
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="library__status">Opening the library…</p>
+  } @else if (books().length === 0) {
+    <p class="library__status">
+      No adventures match your search.
+      <button type="button" class="button button--ghost" (click)="clearFilters()">Clear filters</button>
+    </p>
+  } @else {
+    <div class="library__grid">
+      @for (book of books(); track book.slug) {
+        <app-book-card
+          [book]="book"
+          (begin)="beginQuest($event)"
+          (continueQuest)="continueQuest($event)"
+        />
+      }
+    </div>
+  }
+</main>

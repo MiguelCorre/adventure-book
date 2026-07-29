@@ -1,0 +1,37 @@
+# Assessment material — not ours to publish
+*.pdf
+skills/
+
+# Working notes / planning artifacts / tooling
+.specs/
+.notebook/
+CLAUDE.md
+.claude/
+
+# Java / Maven
+target/
+*.class
+!.mvn/wrapper/maven-wrapper.jar
+
+# Application runtime data (H2 file database)
+backend/data/
+
+# Node / Angular
+node_modules/
+.angular/
+dist/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+
+# OS
+Thumbs.db
+.DS_Store

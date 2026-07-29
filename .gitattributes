@@ -1,0 +1,7 @@
+# Normalise line endings: LF in the repository, native in the working copy.
+* text=auto eol=lf
+
+# Maven wrapper must stay executable and unmangled
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
+*.jar binary

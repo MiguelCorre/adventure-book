@@ -47,7 +47,7 @@ public class BookRepository {
     @Autowired
     public BookRepository(AdventureProperties properties, BookJsonMapper jsonMapper,
             ValidationEngine validationEngine) {
-        this(properties.booksDir(), jsonMapper, validationEngine);
+        this(properties.booksPath(), jsonMapper, validationEngine);
     }
 
     /** Test seam: point the repository at an arbitrary directory without a Spring context. */

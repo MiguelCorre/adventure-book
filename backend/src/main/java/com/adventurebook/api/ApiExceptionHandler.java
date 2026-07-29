@@ -9,7 +9,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.adventurebook.api.BookController.BookNotFoundException;
+import com.adventurebook.book.BookNotFoundException;
 import com.adventurebook.game.GameExceptions.BookNotPlayableException;
 import com.adventurebook.game.GameExceptions.GameFinishedException;
 import com.adventurebook.game.GameExceptions.GameNotFoundException;

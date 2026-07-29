@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.adventurebook.api.dto.BookSummary;
+import com.adventurebook.book.BookNotFoundException;
 import com.adventurebook.book.BookRepository;
 import com.adventurebook.book.BookService;
 import com.adventurebook.book.Difficulty;
@@ -47,12 +48,5 @@ public class BookController {
         return bookRepository.findBySlug(slug)
                 .map(book -> BookSummary.from(book, false))
                 .orElseThrow(() -> new BookNotFoundException(slug));
-    }
-
-    /** No such book in the library. */
-    public static class BookNotFoundException extends RuntimeException {
-        public BookNotFoundException(String slug) {
-            super("No book with slug '%s'".formatted(slug));
-        }
     }
 }

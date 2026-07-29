@@ -9,6 +9,11 @@ spring:
     console:
       enabled: false
 
+# NOTE: this file shadows src/main/resources/application.yml entirely during tests
+# (same classpath resource name), so it must be complete rather than a set of overrides.
 adventure:
-  books-dir: src/test/resources/books
+  # Tests that boot the application use the real library, so an end-to-end play-through
+  # exercises the books we actually ship. Tests that pin down the supplied books build a
+  # BookRepository directly against src/test/resources/books instead.
+  books-dir: ../books
   starting-health: 10

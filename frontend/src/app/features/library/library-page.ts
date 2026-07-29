@@ -8,11 +8,12 @@ import { GamesApi } from '../../core/games-api';
 import { BookSummary, DIFFICULTIES, Difficulty } from '../../core/models';
 import { messageOf } from '../../core/problem';
 import { BookCard } from './book-card';
+import { UploadBook } from './upload-book';
 
 /** Objective 1: the home page. Lists every book, searchable and filterable. */
 @Component({
   selector: 'app-library-page',
-  imports: [BookCard],
+  imports: [BookCard, UploadBook],
   templateUrl: './library-page.html',
   styleUrl: './library-page.scss',
 })
@@ -83,6 +84,12 @@ export class LibraryPage implements OnInit {
     this.query.set('');
     this.selectedDifficulties.set([]);
     this.reload();
+  }
+
+  /** Clears any narrowing so the newly added book is visible without hunting for it. */
+  protected onBookAdded(): void {
+    this.error.set(null);
+    this.clearFilters();
   }
 
   protected beginQuest(book: BookSummary): void {

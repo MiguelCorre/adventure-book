@@ -1,0 +1,43 @@
+<div class="upload">
+  <button type="button" class="button button--ghost upload__toggle" (click)="toggle()"
+          [attr.aria-expanded]="open()">
+    {{ open() ? 'Cancel' : '+ Add a book' }}
+  </button>
+
+  @if (open()) {
+    <div class="upload__panel">
+      <p class="upload__hint">
+        Choose a book JSON file. It is checked before anything is stored, so a book with
+        problems is never added to the library.
+      </p>
+
+      <label class="upload__field">
+        <span class="visually-hidden">Book JSON file</span>
+        <input type="file" accept="application/json,.json" [disabled]="uploading()"
+               (change)="onFileSelected($any($event.target))" />
+      </label>
+
+      @if (uploading()) {
+        <p class="upload__status" role="status">Checking the book…</p>
+      }
+
+      @if (error(); as message) {
+        <div class="upload__error" role="alert">
+          <p class="upload__error-title">{{ message }}</p>
+          @if (issues().length > 0) {
+            <ul class="upload__issues">
+              @for (issue of issues(); track issue.rule + issue.sectionId + issue.message) {
+                <li>
+                  {{ issue.message }}
+                  @if (issue.sectionId) {
+                    <span class="upload__issue-section">section {{ issue.sectionId }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

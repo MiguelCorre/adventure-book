@@ -41,6 +41,8 @@
         </button>
       }
     </div>
+
+    <app-upload-book (added)="onBookAdded()" />
   </div>
 
   @if (error()) {

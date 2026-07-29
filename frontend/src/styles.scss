@@ -1,0 +1,178 @@
+/* Design tokens and base styles.
+   Palette and typography follow the mock-ups in the assessment brief:
+   parchment page, dark-brown banner, gold call-to-action, serif display type. */
+
+:root {
+  /* Surfaces */
+  --surface-page: #f7f3ea;
+  --surface-card: #fffdf8;
+  --surface-sunken: #f0e9db;
+  --surface-banner: #4a3729;
+  --surface-banner-accent: #5d4635;
+
+  /* Ink */
+  --ink-strong: #2f2418;
+  --ink: #4a3c2c;
+  --ink-muted: #8a7862;
+  --ink-inverse: #f7f3ea;
+
+  /* Accent */
+  --gold: #c9a227;
+  --gold-bright: #e3bd4d;
+  --gold-deep: #a5821a;
+
+  /* Difficulty + status */
+  --easy-bg: #dff2e1;
+  --easy-ink: #1f5c2e;
+  --medium-bg: #fbeacd;
+  --medium-ink: #8a5a13;
+  --hard-bg: #fadcdc;
+  --hard-ink: #8d2020;
+  --invalid-bg: #f3e2e2;
+  --invalid-ink: #8d2020;
+  --health: #c0392b;
+
+  /* Lines and depth */
+  --border: #e2d7c3;
+  --border-strong: #cdbda2;
+  --shadow-card: 0 1px 2px rgb(74 55 41 / 8%), 0 4px 12px rgb(74 55 41 / 6%);
+  --shadow-raised: 0 4px 16px rgb(74 55 41 / 14%);
+
+  /* Shape and rhythm */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+
+  /* Type */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--ink-strong);
+  line-height: 1.25;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+}
+
+/* Shared primitives -------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge--easy {
+  background: var(--easy-bg);
+  color: var(--easy-ink);
+}
+
+.badge--medium {
+  background: var(--medium-bg);
+  color: var(--medium-ink);
+}
+
+.badge--hard {
+  background: var(--hard-bg);
+  color: var(--hard-ink);
+}
+
+.badge--invalid {
+  background: var(--invalid-bg);
+  color: var(--invalid-ink);
+}
+
+.badge--neutral {
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.button--primary {
+  background: var(--gold);
+  color: #2f2418;
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--gold-bright);
+}
+
+.button--primary:disabled {
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+}
+
+.button--ghost {
+  background: var(--surface-card);
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.button--ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

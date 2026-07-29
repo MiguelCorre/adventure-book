@@ -1,0 +1,179 @@
+{
+  "title": "The Clockwork Lighthouse",
+  "author": "Ines Vaz-Corvo",
+  "difficulty": "MEDIUM",
+  "sections": [
+    {
+      "id": 1,
+      "text": "The keeper's boat left an hour ago and has not come back. From the shingle you can see the lighthouse standing dark against a bruised sky, its great lamp dead for the first time in ninety years. The tide is turning, and somewhere beyond the headland a cargo ship is sounding her horn in the wrong direction.",
+      "type": "BEGIN",
+      "options": [
+        {
+          "description": "Take the outer stair that spirals up the tower",
+          "gotoId": 10
+        },
+        {
+          "description": "Force the seaward door at the base",
+          "gotoId": 20,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "4",
+            "text": "The swollen door gives all at once and you go down hard on the wet flagstones, opening your palm on a broken hinge."
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "text": "The stair clings to the outside of the tower, worn smooth by a century of boots. Salt spray reaches you even at this height. Above, the gallery rail is missing three of its uprights.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Keep climbing, close to the wall",
+          "gotoId": 30
+        },
+        {
+          "description": "Go back down and force the seaward door instead",
+          "gotoId": 20,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "2",
+            "text": "You misjudge the last two steps in the dark and land badly."
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "text": "The machine room smells of brine and hot brass. Seawater stands knee-deep across the floor, and the great counterweight that drives the lamp hangs motionless in its shaft. A workbench sits above the waterline on the far wall.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Wade straight through to the ladder",
+          "gotoId": 40,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "4",
+            "text": "Something jagged is hidden under the black water. You feel it bite through your boot before you feel the cold."
+          }
+        },
+        {
+          "description": "Edge along the wall to the workbench",
+          "gotoId": 50
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "text": "Halfway up, the wind turns and pins you against the stone. A herring gull that has nested in the tower wall comes off her eggs screaming, close enough that you feel the wingbeat on your face. A window stands open an arm's length to your left.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Duck through the open window",
+          "gotoId": 40
+        },
+        {
+          "description": "Press on around to the outer gallery",
+          "gotoId": 70,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "5",
+            "text": "The missing uprights leave nothing to hold. You get around the curve on your knees, and the stone takes the skin off both of them."
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "text": "The lamp room is a cathedral of glass. The lens sits in its cradle, big as a rowing boat and perfectly still, and the clockwork that should be turning it has stopped dead. One brass gear has jumped its seat and jammed against the frame. The crank handle is stowed on the wall where the keeper left it.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Fetch the crank handle and wind the mechanism properly",
+          "gotoId": 80
+        },
+        {
+          "description": "Pry the jammed gear loose with your hands, there is no time",
+          "gotoId": 90,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "5",
+            "text": "The gear comes free and the whole train lurches into motion with your fingers still inside it."
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "text": "The workbench is the keeper's whole life in miniature: oil cans, a tin of good tobacco, a tide table annotated in pencil going back years. Under it all is a first-aid tin with a red cross worn almost to nothing.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Open the tin and see to yourself before going on",
+          "gotoId": 60,
+          "consequence": {
+            "type": "GAIN_HEALTH",
+            "value": "6",
+            "text": "Iodine, clean bandage, and a minute sitting down. The keeper kept his tin better than most hospitals."
+          }
+        },
+        {
+          "description": "Leave it and make for the ladder",
+          "gotoId": 40
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "text": "Patched up and steadier now, you notice what you missed before: the keeper's oilskin is gone from its hook, but his boots are still under the bench. Wherever he went, he went in a hurry and he went barefoot.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Climb the ladder to the lamp room",
+          "gotoId": 40
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "text": "The outer gallery runs right around the lamp room, and the gale up here has a voice of its own. Below and to the north, closer than it has any right to be, the cargo ship is showing her red side light. She is turning towards the rocks, not away from them.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Break the gallery window and get inside to the mechanism",
+          "gotoId": 40,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "4",
+            "text": "The old glass does not break cleanly. You go through it shoulder first and pay for the shortcut."
+          }
+        },
+        {
+          "description": "Stand at the rail and swing your storm lantern at her",
+          "gotoId": 100
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "text": "The crank bites, the counterweight starts its long fall down the shaft, and the lens begins to turn. Light goes out across the water in a slow white sweep, catches the cargo ship broadside, and holds her. You watch her come about, well short of the rocks. When the keeper's boat finally returns at dawn he says nothing at all, just looks up at the turning lamp and takes off his cap.",
+      "type": "END"
+    },
+    {
+      "id": 90,
+      "text": "The gear is seated. Your hand is a ruin, but the train is free and the crank is still on the wall.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Wind the mechanism one-handed",
+          "gotoId": 80
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "text": "You brace against the rail and swing the lantern in the long arc every sailor on this coast learns before they learn to swim. For a moment nothing. Then her bow swings hard to starboard, and her horn answers you twice across the water. The lamp above you never does turn that night, but the light that mattered came from your hand.",
+      "type": "END"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "title": "The Sunken Orchard",
+  "author": "Ines Vaz-Corvo",
+  "difficulty": "EASY",
+  "sections": [
+    {
+      "id": 1,
+      "text": "They flooded the valley in your grandmother's time to make the reservoir, and every summer since, the water has dropped a little further. This year it has dropped far enough. The tops of the old apple trees are showing above the surface, black and bare, exactly where she always said they would be.",
+      "type": "BEGIN",
+      "options": [
+        {
+          "description": "Row out to the nearest treetop",
+          "gotoId": 10
+        },
+        {
+          "description": "Walk the shoreline first and look for the village road",
+          "gotoId": 20
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "text": "Up close the trees are not dead so much as sleeping. Something pale is caught in a fork of the branches just under the waterline, wedged there by years of current.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Reach down into the cold water and work it free",
+          "gotoId": 30,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "2",
+            "text": "The water is colder than it looks and the branch has a broken spur you did not see."
+          }
+        },
+        {
+          "description": "Leave it and follow the line of treetops inland",
+          "gotoId": 40
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "text": "The old road comes out of the water like something surfacing, still cobbled, still running dead straight towards the middle of the reservoir. Walking down it is the strangest thing you have ever done.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Follow the road as far as it will let you",
+          "gotoId": 30
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "text": "It is a china plate, chipped at the rim, with a hand-painted border of small green apples. You have seen this pattern before, on the dresser in your grandmother's kitchen, on the one plate she would never let anyone eat from.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Take the plate home",
+          "gotoId": 50
+        },
+        {
+          "description": "Keep going and find the house it came from",
+          "gotoId": 40
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "text": "The orchard thins and there it is: four walls of dressed stone standing to shoulder height, a doorway with no door, and a hearth still black with soot. Silt has made a floor of the whole thing. In the corner where a dresser might have stood, something catches the light.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Wade in and dig it out",
+          "gotoId": 60,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "3",
+            "text": "The silt is deeper than it looks and the doorstep is exactly where you put your shin."
+          }
+        },
+        {
+          "description": "Stand in the doorway a while, then row back",
+          "gotoId": 50
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "text": "You get back to the shore as the light goes. Whatever else the valley is keeping, it can keep. Your grandmother told this story for forty years and nobody believed a word of it, and now you have stood in her mother's kitchen with the reservoir up to your knees. That will do.",
+      "type": "END"
+    },
+    {
+      "id": 60,
+      "text": "It is the rest of the set. Nine plates, stacked as neatly as the day the water came, and not one of them broken. You carry them up the old road two at a time until the light goes, and the reservoir closes over the orchard behind you for another year.",
+      "type": "END"
+    }
+  ]
+}

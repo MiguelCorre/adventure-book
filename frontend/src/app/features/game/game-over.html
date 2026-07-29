@@ -1,0 +1,21 @@
+<section class="ending" [class.ending--won]="status() === 'WON'" [class.ending--dead]="status() === 'DEAD'"
+         role="alert">
+  <p class="ending__mark" aria-hidden="true">{{ status() === 'WON' ? '★' : '☠' }}</p>
+  <h2 class="ending__title">
+    {{ status() === 'WON' ? 'Your adventure is complete' : 'Your adventure ends here' }}
+  </h2>
+
+  @if (status() === 'DEAD' && fatalBlow(); as blow) {
+    <p class="ending__cause">{{ blow.text }}</p>
+    <p class="ending__detail">That last choice cost you {{ blow.value }} health.</p>
+  } @else {
+    <p class="ending__cause">{{ endingText() }}</p>
+  }
+
+  <div class="ending__actions">
+    <button type="button" class="button button--primary" [disabled]="busy()" (click)="restart.emit()">
+      {{ status() === 'WON' ? 'Play Again' : 'Try Again' }}
+    </button>
+    <button type="button" class="button button--ghost" (click)="leave.emit()">Back to Library</button>
+  </div>
+</section>

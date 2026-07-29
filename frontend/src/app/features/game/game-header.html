@@ -1,0 +1,29 @@
+<header class="game-header">
+  <button type="button" class="button button--ghost game-header__leave" (click)="leave.emit()">
+    ← Back to Library
+  </button>
+
+  <div class="game-header__book">
+    <span class="game-header__book-icon" aria-hidden="true">📖</span>
+    <h1 class="game-header__title">{{ bookTitle() }}</h1>
+  </div>
+
+  <div class="game-header__health" [class.game-header__health--critical]="critical()">
+    <span class="visually-hidden">Health: {{ health() }} of {{ maxHealth() }}</span>
+    <span class="game-header__pips" aria-hidden="true">
+      @for (filled of pips(); track $index) {
+        <span class="game-header__pip" [class.game-header__pip--filled]="filled"></span>
+      }
+    </span>
+    <span class="game-header__health-count" aria-hidden="true">{{ health() }}/{{ maxHealth() }}</span>
+  </div>
+
+  <button
+    type="button"
+    class="button button--ghost game-header__save"
+    [disabled]="!canSave() || saving()"
+    (click)="save.emit()"
+  >
+    {{ saving() ? 'Saving…' : '⌸ Save Progress' }}
+  </button>
+</header>

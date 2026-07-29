@@ -1,0 +1,66 @@
+.game-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.game-header__book {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--surface-sunken);
+  border-radius: 999px;
+}
+
+.game-header__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.game-header__health {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.game-header__pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.game-header__pip {
+  width: 9px;
+  height: 14px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+
+.game-header__pip--filled {
+  background: var(--health);
+  border-color: var(--health);
+}
+
+.game-header__health-count {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-header__health--critical .game-header__health-count {
+  color: var(--health);
+  font-weight: 700;
+}
+
+.game-header__leave,
+.game-header__save {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+}

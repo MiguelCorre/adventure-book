@@ -1,0 +1,51 @@
+@if (store.state(); as game) {
+  <app-game-header
+    [bookTitle]="game.bookTitle"
+    [health]="game.health"
+    [maxHealth]="game.maxHealth"
+    [canSave]="!store.finished()"
+    [saving]="store.saving()"
+    (leave)="store.leave()"
+    (save)="store.save()"
+  />
+
+  <main class="page">
+    <div class="page__sheet">
+      @if (store.notice(); as message) {
+        <p class="page__notice" role="status">{{ message }}</p>
+      }
+      @if (store.error(); as message) {
+        <p class="page__error" role="alert">{{ message }}</p>
+      }
+
+      <app-section-view
+        [section]="game.section"
+        [consequence]="game.lastConsequence"
+        [busy]="store.loading()"
+        (choose)="store.choose($event)"
+      />
+
+      @if (store.finished()) {
+        <app-game-over
+          [status]="$any(game.status)"
+          [endingText]="game.section.text"
+          [fatalBlow]="game.lastConsequence"
+          [busy]="store.loading()"
+          (restart)="store.restart()"
+          (leave)="store.leave()"
+        />
+      }
+    </div>
+  </main>
+} @else if (store.error(); as message) {
+  <main class="page">
+    <div class="page__sheet">
+      <p class="page__error" role="alert">{{ message }}</p>
+      <button type="button" class="button button--ghost" (click)="store.leave()">Back to Library</button>
+    </div>
+  </main>
+} @else {
+  <main class="page">
+    <p class="page__loading">Turning to your page…</p>
+  </main>
+}

@@ -143,6 +143,61 @@ describe('LibraryPage', () => {
     request.flush([]);
   });
 
+  describe('while narrowing the library', () => {
+    /** Presses a filter chip without flushing the request it triggers. */
+    function startRefining(): void {
+      html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+      vi.advanceTimersByTime(250);
+      fixture.detectChanges();
+    }
+
+    it('shows placeholders on the very first paint only', () => {
+      expect(html().querySelectorAll('.skeleton').length).toBeGreaterThan(0);
+
+      settle([book()]);
+      expect(html().querySelectorAll('.skeleton').length).toBe(0);
+
+      startRefining();
+      expect(html().querySelectorAll('.skeleton').length).toBe(0);
+    });
+
+    it('keeps the current results on screen while the next set is fetched', () => {
+      settle([book(), TRAPPED]);
+
+      startRefining();
+
+      // The old cards are still there; nothing was torn down waiting for the response.
+      expect(html().querySelectorAll('app-book-card').length).toBe(2);
+      expect(html().textContent).toContain('The Clockwork Lighthouse');
+      expect(html().querySelector('.library__status')).toBeNull();
+      http.expectOne((r) => r.url === '/api/books').flush([]);
+    });
+
+    it('marks the results as busy and stops them being clicked', () => {
+      settle([book()]);
+      expect(html().querySelector('.library__results--refreshing')).toBeNull();
+
+      startRefining();
+
+      expect(html().querySelector('.library__results--refreshing')).not.toBeNull();
+      expect(html().querySelector('.library__grid')?.getAttribute('aria-busy')).toBe('true');
+      http.expectOne((r) => r.url === '/api/books').flush([]);
+    });
+
+    it('clears the busy state once the new results arrive', () => {
+      settle([book()]);
+      startRefining();
+
+      http.expectOne((r) => r.url === '/api/books').flush([TRAPPED]);
+      fixture.detectChanges();
+
+      expect(html().querySelector('.library__results--refreshing')).toBeNull();
+      expect(html().querySelector('.library__grid')?.getAttribute('aria-busy')).toBe('false');
+      expect(html().textContent).toContain('Pirates of the Jade Sea');
+      expect(html().textContent).not.toContain('The Clockwork Lighthouse');
+    });
+  });
+
   it('shows an empty state when nothing matches', () => {
     settle([]);
 

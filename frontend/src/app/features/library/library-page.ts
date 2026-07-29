@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -25,10 +25,25 @@ export class LibraryPage implements OnInit {
   protected readonly difficulties = DIFFICULTIES;
 
   protected readonly books = signal<BookSummary[]>([]);
-  protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly query = signal('');
   protected readonly selectedDifficulties = signal<readonly Difficulty[]>([]);
+
+  /** A request is in flight. */
+  private readonly loading = signal(true);
+  /** At least one response has come back, successfully or not. */
+  private readonly settled = signal(false);
+
+  /**
+   * Only the very first load gets a placeholder. Narrowing an already-visible library
+   * keeps the current results on screen and dims them, so refining a search never throws
+   * the page away and rebuilds it.
+   */
+  protected readonly initialLoading = computed(() => this.loading() && !this.settled());
+  protected readonly refreshing = computed(() => this.loading() && this.settled());
+
+  /** Placeholder cards for the first paint; the count is arbitrary, it just fills the grid. */
+  protected readonly skeletons = [0, 1, 2, 3, 4, 5];
 
   /** Typing should not fire a request per keystroke, nor repeat an unchanged search. */
   private readonly searches = new Subject<void>();
@@ -43,12 +58,12 @@ export class LibraryPage implements OnInit {
       .subscribe({
         next: (books) => {
           this.books.set(books);
-          this.loading.set(false);
+          this.settle();
           this.error.set(null);
         },
         error: (failure) => {
           this.error.set(messageOf(failure, 'The library could not be loaded.'));
-          this.loading.set(false);
+          this.settle();
         },
       });
   }
@@ -60,6 +75,11 @@ export class LibraryPage implements OnInit {
   protected reload(): void {
     this.loading.set(true);
     this.searches.next();
+  }
+
+  private settle(): void {
+    this.loading.set(false);
+    this.settled.set(true);
   }
 
   protected onSearch(value: string): void {

@@ -131,3 +131,149 @@
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: 1.25rem;
 }
+
+/* Narrowing the library ------------------------------------------------------
+   The results stay on screen while the next set is fetched. They dim slightly and
+   stop accepting clicks, which reads as "these are about to change" rather than
+   the page being torn down and rebuilt. */
+
+.library__results {
+  position: relative;
+  transition: opacity 180ms ease;
+}
+
+.library__results--refreshing {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.library__progress {
+  position: absolute;
+  top: -0.75rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.library__progress--active {
+  opacity: 1;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: sweep 900ms ease-in-out infinite;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Arriving cards rise into place. Because the list is keyed by slug, a book that
+   survives a filter change is never re-created, so it holds its position instead
+   of flickering.
+
+   Two deliberate constraints, both learned the hard way:
+
+   1. There is no leave animation. `animate.leave` keeps an element in the DOM until
+      its animation reports finishing, so a page that is not compositing frames (a
+      hidden tab, a throttled renderer) leaves removed cards occupying the grid
+      forever. Removal must never depend on an animation running.
+
+   2. This animates transform only, never opacity. If the animation stalls on its
+      first frame the card is a few pixels low, which nobody notices — where fading
+      in from zero would have left it invisible and unreachable. */
+
+app-book-card {
+  display: block;
+}
+
+.card-enter {
+  animation: card-in 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes card-in {
+  from {
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* First paint only: placeholders shaped like cards, so the grid does not jump when
+   the real ones arrive. */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 12.5rem;
+  padding: 1.25rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.skeleton__line {
+  height: 0.7rem;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 25%,
+    color-mix(in srgb, var(--surface-sunken) 45%, var(--surface-card)) 37%,
+    var(--surface-sunken) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton__line--title {
+  height: 1.1rem;
+  width: 75%;
+}
+
+.skeleton__line--author {
+  width: 45%;
+}
+
+.skeleton__line--short {
+  width: 60%;
+  margin-top: auto;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library__results,
+  .card-enter,
+  .skeleton__line,
+  .library__progress,
+  .library__progress--active::after {
+    animation: none;
+    transition: none;
+  }
+
+  /* Keep the busy state legible without the fade. */
+  .library__results--refreshing {
+    opacity: 1;
+  }
+}

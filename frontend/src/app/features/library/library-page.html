@@ -52,22 +52,42 @@
     </p>
   }
 
-  @if (loading()) {
-    <p class="library__status">Opening the library…</p>
-  } @else if (books().length === 0) {
-    <p class="library__status">
-      No adventures match your search.
-      <button type="button" class="button button--ghost" (click)="clearFilters()">Clear filters</button>
-    </p>
-  } @else {
-    <div class="library__grid">
-      @for (book of books(); track book.slug) {
-        <app-book-card
-          [book]="book"
-          (begin)="beginQuest($event)"
-          (continueQuest)="continueQuest($event)"
-        />
+  <div class="library__results" [class.library__results--refreshing]="refreshing()">
+    <div class="library__progress" [class.library__progress--active]="refreshing()" aria-hidden="true"></div>
+
+    @if (initialLoading()) {
+      <div class="library__grid">
+        @for (placeholder of skeletons; track placeholder) {
+          <div class="skeleton" aria-hidden="true">
+            <span class="skeleton__line skeleton__line--title"></span>
+            <span class="skeleton__line skeleton__line--author"></span>
+            <span class="skeleton__line"></span>
+            <span class="skeleton__line skeleton__line--short"></span>
+          </div>
+        }
+      </div>
+      <p class="visually-hidden" role="status">Opening the library…</p>
+    } @else if (books().length === 0) {
+      @if (!error()) {
+        <p class="library__status" animate.enter="card-enter">
+          No adventures match your search.
+          <button type="button" class="button button--ghost" (click)="clearFilters()">Clear filters</button>
+        </p>
       }
-    </div>
-  }
+    } @else {
+      <div class="library__grid" [attr.aria-busy]="refreshing()">
+        @for (book of books(); track book.slug) {
+          <app-book-card
+            animate.enter="card-enter"
+            [book]="book"
+            (begin)="beginQuest($event)"
+            (continueQuest)="continueQuest($event)"
+          />
+        }
+      </div>
+      <p class="visually-hidden" role="status">
+        {{ refreshing() ? 'Updating results…' : books().length + ' adventures shown' }}
+      </p>
+    }
+  </div>
 </main>

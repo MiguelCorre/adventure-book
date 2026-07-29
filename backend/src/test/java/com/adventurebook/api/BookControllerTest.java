@@ -22,6 +22,7 @@ import com.adventurebook.book.Book;
 import com.adventurebook.book.BookRepository;
 import com.adventurebook.book.BookService;
 import com.adventurebook.book.Difficulty;
+import com.adventurebook.book.BookUploadService;
 import com.adventurebook.book.LoadedBook;
 import com.adventurebook.book.ValidationIssue;
 import com.adventurebook.book.ValidationReport;
@@ -43,6 +44,9 @@ class BookControllerTest {
 
     @MockitoBean
     private SaveService saveService;
+
+    @MockitoBean
+    private BookUploadService bookUploadService;
 
     private static LoadedBook playable(String slug, String title, Difficulty difficulty) {
         Book book = Books.titled(title, difficulty,

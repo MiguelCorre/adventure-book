@@ -9,7 +9,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.adventurebook.api.dto.ValidationIssueView;
 import com.adventurebook.book.BookNotFoundException;
+import com.adventurebook.book.BookRejectedException;
+import com.adventurebook.book.BookSlugConflictException;
 import com.adventurebook.game.GameExceptions.BookNotPlayableException;
 import com.adventurebook.game.GameExceptions.GameFinishedException;
 import com.adventurebook.game.GameExceptions.GameNotFoundException;
@@ -55,6 +58,20 @@ public class ApiExceptionHandler {
     @ExceptionHandler(InvalidChoiceException.class)
     public ProblemDetail handleInvalidChoice(InvalidChoiceException e) {
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Choice not available", e.getMessage(), "invalid-choice");
+    }
+
+    /** Attaches the whole validation report so the curator can fix everything in one pass. */
+    @ExceptionHandler(BookRejectedException.class)
+    public ProblemDetail handleRejectedUpload(BookRejectedException e) {
+        ProblemDetail problem = problem(HttpStatus.UNPROCESSABLE_ENTITY, "Book rejected", e.getMessage(),
+                "book-rejected");
+        problem.setProperty("issues", e.report().issues().stream().map(ValidationIssueView::from).toList());
+        return problem;
+    }
+
+    @ExceptionHandler(BookSlugConflictException.class)
+    public ProblemDetail handleSlugConflict(BookSlugConflictException e) {
+        return problem(HttpStatus.CONFLICT, "Book already exists", e.getMessage(), "book-exists");
     }
 
     @ExceptionHandler(Exception.class)

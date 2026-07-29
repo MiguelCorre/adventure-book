@@ -1,19 +1,26 @@
 package com.adventurebook.api;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.adventurebook.api.dto.BookSummary;
 import com.adventurebook.book.BookNotFoundException;
 import com.adventurebook.book.BookRepository;
 import com.adventurebook.book.BookService;
+import com.adventurebook.book.BookUploadService;
 import com.adventurebook.book.Difficulty;
 import com.adventurebook.save.SaveService;
 
@@ -24,11 +31,14 @@ public class BookController {
 
     private final BookService bookService;
     private final BookRepository bookRepository;
+    private final BookUploadService uploads;
     private final SaveService saves;
 
-    public BookController(BookService bookService, BookRepository bookRepository, SaveService saves) {
+    public BookController(BookService bookService, BookRepository bookRepository,
+            BookUploadService uploads, SaveService saves) {
         this.bookService = bookService;
         this.bookRepository = bookRepository;
+        this.uploads = uploads;
         this.saves = saves;
     }
 
@@ -53,5 +63,17 @@ public class BookController {
         return bookRepository.findBySlug(slug)
                 .map(book -> BookSummary.from(book, saves.exists(slug)))
                 .orElseThrow(() -> new BookNotFoundException(slug));
+    }
+
+    /**
+     * Adds a book to the library.
+     *
+     * <p>A book that fails validation is rejected with the full report attached, and
+     * nothing is written, so the library is never left holding a story nobody can finish.
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public BookSummary upload(@RequestPart("file") MultipartFile file) throws IOException {
+        return BookSummary.from(uploads.add(file.getBytes()), false);
     }
 }

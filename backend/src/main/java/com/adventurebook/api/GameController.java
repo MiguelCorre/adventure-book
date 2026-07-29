@@ -20,6 +20,9 @@ import com.adventurebook.book.Section;
 import com.adventurebook.game.GameExceptions.SectionNotFoundException;
 import com.adventurebook.game.GameService;
 import com.adventurebook.game.GameSession;
+import com.adventurebook.save.GameSave;
+import com.adventurebook.save.NoSavedProgressException;
+import com.adventurebook.save.SaveService;
 
 import jakarta.validation.Valid;
 
@@ -29,15 +32,29 @@ import jakarta.validation.Valid;
 public class GameController {
 
     private final GameService games;
+    private final SaveService saves;
 
-    public GameController(GameService games) {
+    public GameController(GameService games, SaveService saves) {
         this.games = games;
+        this.saves = saves;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public GameState start(@Valid @RequestBody StartGameRequest request) {
-        return view(games.start(request.bookSlug()));
+        String slug = request.bookSlug();
+        if (!request.fromSave()) {
+            return view(games.start(slug));
+        }
+        GameSave save = saves.find(slug).orElseThrow(() -> new NoSavedProgressException(slug));
+        return view(games.resume(slug, save.getSectionId(), save.getHealth()));
+    }
+
+    /** Stores the current position so the player can pick the book up again later. */
+    @PostMapping("/{gameId}/save")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void save(@PathVariable UUID gameId) {
+        saves.save(games.require(gameId));
     }
 
     @PostMapping("/{gameId}/choices")

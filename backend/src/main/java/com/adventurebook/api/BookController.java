@@ -15,6 +15,7 @@ import com.adventurebook.book.BookNotFoundException;
 import com.adventurebook.book.BookRepository;
 import com.adventurebook.book.BookService;
 import com.adventurebook.book.Difficulty;
+import com.adventurebook.save.SaveService;
 
 /** Read access to the library. */
 @RestController
@@ -23,10 +24,12 @@ public class BookController {
 
     private final BookService bookService;
     private final BookRepository bookRepository;
+    private final SaveService saves;
 
-    public BookController(BookService bookService, BookRepository bookRepository) {
+    public BookController(BookService bookService, BookRepository bookRepository, SaveService saves) {
         this.bookService = bookService;
         this.bookRepository = bookRepository;
+        this.saves = saves;
     }
 
     /**
@@ -38,15 +41,17 @@ public class BookController {
     @GetMapping
     public List<BookSummary> list(@RequestParam(required = false) String query,
             @RequestParam(required = false) Set<Difficulty> difficulty) {
+        // Fetched once for the whole page rather than per card.
+        Set<String> saved = saves.slugsWithSavedProgress();
         return bookService.search(query, difficulty).stream()
-                .map(book -> BookSummary.from(book, false))
+                .map(book -> BookSummary.from(book, saved.contains(book.slug())))
                 .toList();
     }
 
     @GetMapping("/{slug}")
     public BookSummary get(@PathVariable String slug) {
         return bookRepository.findBySlug(slug)
-                .map(book -> BookSummary.from(book, false))
+                .map(book -> BookSummary.from(book, saves.exists(slug)))
                 .orElseThrow(() -> new BookNotFoundException(slug));
     }
 }

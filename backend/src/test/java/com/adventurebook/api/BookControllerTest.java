@@ -27,6 +27,7 @@ import com.adventurebook.book.ValidationIssue;
 import com.adventurebook.book.ValidationReport;
 import com.adventurebook.book.ValidationRule;
 import com.adventurebook.book.testsupport.Books;
+import com.adventurebook.save.SaveService;
 
 @WebMvcTest(BookController.class)
 class BookControllerTest {
@@ -39,6 +40,9 @@ class BookControllerTest {
 
     @MockitoBean
     private BookRepository bookRepository;
+
+    @MockitoBean
+    private SaveService saveService;
 
     private static LoadedBook playable(String slug, String title, Difficulty difficulty) {
         Book book = Books.titled(title, difficulty,

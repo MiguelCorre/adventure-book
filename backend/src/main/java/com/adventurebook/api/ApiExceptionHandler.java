@@ -15,6 +15,7 @@ import com.adventurebook.game.GameExceptions.GameFinishedException;
 import com.adventurebook.game.GameExceptions.GameNotFoundException;
 import com.adventurebook.game.GameExceptions.InvalidChoiceException;
 import com.adventurebook.game.GameExceptions.SectionNotFoundException;
+import com.adventurebook.save.NoSavedProgressException;
 
 /**
  * Turns domain failures into RFC 7807 responses.
@@ -29,7 +30,8 @@ public class ApiExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
     private static final String TYPE_PREFIX = "https://adventure-book/problems/";
 
-    @ExceptionHandler({ BookNotFoundException.class, GameNotFoundException.class })
+    @ExceptionHandler({ BookNotFoundException.class, GameNotFoundException.class,
+            NoSavedProgressException.class })
     public ProblemDetail handleNotFound(RuntimeException e) {
         return problem(HttpStatus.NOT_FOUND, "Not found", e.getMessage(), "not-found");
     }

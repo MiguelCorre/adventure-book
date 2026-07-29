@@ -179,6 +179,19 @@ describe('GamePage', () => {
     http.expectNone('/api/games/game-1/choices');
   });
 
+  it('hides the choices of the section a dying player is still standing on', () => {
+    // Death keeps the player where they died, so that section's options are still in the
+    // state; offering them would invite a click that can no longer do anything.
+    open(game({
+      status: 'DEAD',
+      health: 0,
+      lastConsequence: { type: 'LOSE_HEALTH', value: 5, text: 'The gear takes your fingers.' },
+    }));
+
+    expect(game().section.options.length).toBe(2);
+    expect(html().querySelectorAll('.choice').length).toBe(0);
+  });
+
   it('reports a game that could not be opened', () => {
     http.expectOne('/api/games/game-1').flush(
       { title: 'Not found', detail: "No game with id 'game-1'" },

@@ -22,6 +22,7 @@
         [section]="game.section"
         [consequence]="game.lastConsequence"
         [busy]="store.loading()"
+        [showChoices]="!store.finished()"
         (choose)="store.choose($event)"
       />
 

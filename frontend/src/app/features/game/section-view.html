@@ -18,7 +18,7 @@
   }
 </article>
 
-@if (section().options.length > 0) {
+@if (showChoices() && section().options.length > 0) {
   <section class="choices">
     <h2 class="choices__title">What do you choose?</h2>
     <ul class="choices__list">

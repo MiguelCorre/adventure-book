@@ -29,8 +29,9 @@
       @if (store.finished()) {
         <app-game-over
           [status]="$any(game.status)"
-          [endingText]="game.section.text"
           [fatalBlow]="game.lastConsequence"
+          [health]="game.health"
+          [maxHealth]="game.maxHealth"
           [busy]="store.loading()"
           (restart)="store.restart()"
           (leave)="store.leave()"

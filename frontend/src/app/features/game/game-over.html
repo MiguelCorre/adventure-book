@@ -5,11 +5,13 @@
     {{ status() === 'WON' ? 'Your adventure is complete' : 'Your adventure ends here' }}
   </h2>
 
+  <!-- The prose is not repeated here: the closing passage is already above in the reading
+       area, and on a death the blow that caused it is already in the consequence banner.
+       This panel says how it ended and what to do next. -->
   @if (status() === 'DEAD' && fatalBlow(); as blow) {
-    <p class="ending__cause">{{ blow.text }}</p>
     <p class="ending__detail">That last choice cost you {{ blow.value }} health.</p>
-  } @else {
-    <p class="ending__cause">{{ endingText() }}</p>
+  } @else if (status() === 'WON') {
+    <p class="ending__detail">You reached an ending with {{ health() }} of {{ maxHealth() }} health left.</p>
   }
 
   <div class="ending__actions">

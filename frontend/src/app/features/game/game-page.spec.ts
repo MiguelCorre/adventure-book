@@ -136,12 +136,15 @@ describe('GamePage', () => {
 
     const ending = html().querySelector('app-game-over')!;
     expect(ending.textContent).toContain('Your adventure is complete');
-    expect(ending.textContent).toContain('The lens begins to turn.');
+    expect(ending.textContent).toContain('10 of 10 health left');
     expect(ending.textContent).toContain('Play Again');
     expect(html().querySelectorAll('.choice').length).toBe(0);
+    // The closing passage belongs in the reading area, and appears there once.
+    expect(html().querySelectorAll('.section__text').length).toBe(1);
+    expect(ending.textContent).not.toContain('The lens begins to turn.');
   });
 
-  it('explains a death with the blow that caused it', () => {
+  it('explains a death without repeating the blow already on screen', () => {
     open(game({
       status: 'DEAD',
       health: 0,
@@ -150,9 +153,11 @@ describe('GamePage', () => {
 
     const ending = html().querySelector('app-game-over')!;
     expect(ending.textContent).toContain('Your adventure ends here');
-    expect(ending.textContent).toContain('The gear takes your fingers.');
     expect(ending.textContent).toContain('cost you 5 health');
     expect(ending.textContent).toContain('Try Again');
+    // The banner above already carries the prose; printing it twice read as a stutter.
+    expect(html().querySelector('.consequence')!.textContent).toContain('The gear takes your fingers.');
+    expect(ending.textContent).not.toContain('The gear takes your fingers.');
   });
 
   it('hides the save button once the adventure is over', () => {

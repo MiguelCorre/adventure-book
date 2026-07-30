@@ -1,10 +1,13 @@
 package com.adventurebook.game;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+
+import com.adventurebook.game.GameExceptions.GameNotFoundException;
 
 class SessionRegistryTest {
 
@@ -67,5 +70,36 @@ class SessionRegistryTest {
 
         assertThat(registry.find(id)).isEmpty();
         assertThat(registry.size()).isZero();
+    }
+
+    @Test
+    void appliesAMoveAndStoresItsResult() {
+        UUID id = UUID.randomUUID();
+        registry.put(session(id, "1", 10));
+
+        GameSession moved = registry.update(id,
+                current -> new GameSession(current.id(), current.bookSlug(), "2", 6,
+                        GameStatus.IN_PROGRESS, null));
+
+        assertThat(moved.sectionId()).isEqualTo("2");
+        assertThat(registry.find(id).orElseThrow().health()).isEqualTo(6);
+    }
+
+    @Test
+    void refusesAMoveForAnUnknownGame() {
+        assertThatThrownBy(() -> registry.update(UUID.randomUUID(), current -> current))
+                .isInstanceOf(GameNotFoundException.class);
+    }
+
+    @Test
+    void aMoveThatThrowsLeavesTheStoredSessionUntouched() {
+        UUID id = UUID.randomUUID();
+        registry.put(session(id, "1", 10));
+
+        assertThatThrownBy(() -> registry.update(id, current -> {
+            throw new IllegalStateException("boom");
+        })).isInstanceOf(IllegalStateException.class);
+
+        assertThat(registry.find(id).orElseThrow().sectionId()).isEqualTo("1");
     }
 }

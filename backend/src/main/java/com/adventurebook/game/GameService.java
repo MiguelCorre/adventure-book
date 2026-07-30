@@ -37,9 +37,14 @@ public class GameService {
         return sessions.put(engine.resume(bookOf(bookSlug), sectionId, health));
     }
 
+    /**
+     * One move, applied atomically: read-move-store happens under the session's lock in
+     * the registry, so a double-submitted choice cannot make two moves from the same
+     * state and quietly lose one of them.
+     */
     public GameSession choose(UUID gameId, int optionIndex) {
-        GameSession session = require(gameId);
-        return sessions.put(engine.choose(bookOf(session.bookSlug()), session, optionIndex));
+        return sessions.update(gameId,
+                session -> engine.choose(bookOf(session.bookSlug()), session, optionIndex));
     }
 
     public GameSession require(UUID gameId) {

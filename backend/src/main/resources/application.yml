@@ -13,8 +13,11 @@ spring:
     open-in-view: false
 
   h2:
+    # Off by default: the application has no authentication, so an open database console
+    # is an easy thing to leave exposed. Enable it deliberately when you want to look at
+    # the saves: --spring.h2.console.enabled=true, then browse /h2-console.
     console:
-      enabled: true
+      enabled: false
       path: /h2-console
 
   servlet:

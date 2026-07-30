@@ -3,6 +3,7 @@ package com.adventurebook.book;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -75,6 +76,11 @@ public class BookUploadService {
         try {
             Files.createDirectories(repository.directory());
             Files.write(target, content, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        } catch (FileAlreadyExistsException e) {
+            // The cache said the slug was free, so the file appeared underneath us: another
+            // upload, or someone dropping a file into the directory. Still the caller's
+            // answer, not a server fault.
+            throw new BookSlugConflictException(slug);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not store book at " + target.toAbsolutePath(), e);
         }

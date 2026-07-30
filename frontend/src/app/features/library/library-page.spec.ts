@@ -190,32 +190,40 @@ describe('LibraryPage', () => {
      * moves first, while the taller list is still rendered, so the jump never shows.
      */
     describe('scroll position', () => {
-      function controlsScrolledPastBy(pixels: number): HTMLElement {
-        const controls = html().querySelector<HTMLElement>('.library__controls')!;
-        controls.getBoundingClientRect = () => ({ top: -pixels, bottom: 0, left: 0, right: 0,
-          width: 0, height: 0, x: 0, y: -pixels, toJSON: () => ({}) }) as DOMRect;
-        return controls;
+      let scrollTo: ReturnType<typeof vi.fn>;
+
+      /** jsdom never scrolls, so the offset and the scroll call are both stood in for. */
+      function pageScrolledTo(offset: number): void {
+        vi.stubGlobal('scrollY', offset);
+        scrollTo = vi.fn();
+        vi.stubGlobal('scrollTo', scrollTo);
       }
 
-      it('brings the controls back into view before the results shrink', () => {
+      function resultsHeightOf(pixels: number): HTMLElement {
+        const results = html().querySelector<HTMLElement>('.library__results')!;
+        Object.defineProperty(results, 'offsetHeight', { value: pixels, configurable: true });
+        return results;
+      }
+
+      afterEach(() => vi.unstubAllGlobals());
+
+      it('glides to the top before the results shrink', () => {
         settle([book(), TRAPPED]);
-        const controls = controlsScrolledPastBy(400);
-        const scrollIntoView = vi.fn();
-        controls.scrollIntoView = scrollIntoView;
+        pageScrolledTo(400);
 
         html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
 
-        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+        // Offset zero is the one destination valid at every document height, so the
+        // release can never be clamped.
+        expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
         vi.advanceTimersByTime(250);
         http.expectOne((r) => r.url === '/api/books').flush([]);
       });
 
       it('holds the height until the scroll settles, so the document cannot shrink under it', () => {
         settle([book(), TRAPPED]);
-        const controls = controlsScrolledPastBy(400);
-        controls.scrollIntoView = vi.fn();
-        const results = html().querySelector<HTMLElement>('.library__results')!;
-        Object.defineProperty(results, 'offsetHeight', { value: 840, configurable: true });
+        pageScrolledTo(400);
+        const results = resultsHeightOf(840);
 
         html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
         expect(results.style.minHeight).toBe('840px');
@@ -232,45 +240,58 @@ describe('LibraryPage', () => {
 
       it('releases the height even if the browser never reports the scroll ending', () => {
         settle([book(), TRAPPED]);
-        const controls = controlsScrolledPastBy(400);
-        controls.scrollIntoView = vi.fn();
-        const results = html().querySelector<HTMLElement>('.library__results')!;
-        Object.defineProperty(results, 'offsetHeight', { value: 840, configurable: true });
+        pageScrolledTo(400);
+        const results = resultsHeightOf(840);
 
         html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
         expect(results.style.minHeight).toBe('840px');
 
         vi.advanceTimersByTime(250);
         http.expectOne((r) => r.url === '/api/books').flush([]);
-        vi.advanceTimersByTime(700);
+        vi.advanceTimersByTime(1500);
 
         expect(results.style.minHeight).toBe('');
       });
 
-      it('leaves a reader who can already see the controls where they are', () => {
+      /**
+       * The condition is whether the page is scrolled, not whether the controls are off
+       * screen. A reader cannot press a filter they cannot see, so testing for hidden
+       * controls excluded the very case that jumps: controls in view near the foot of a
+       * page that is about to get shorter.
+       */
+      it('moves even when the controls are on screen, as long as the page is scrolled', () => {
         settle([book(), TRAPPED]);
-        const controls = controlsScrolledPastBy(-50); // still below the viewport top
-        const scrollIntoView = vi.fn();
-        controls.scrollIntoView = scrollIntoView;
+        pageScrolledTo(120);
 
         html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
 
-        expect(scrollIntoView).not.toHaveBeenCalled();
+        expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([]);
+      });
+
+      it('leaves a reader who is already at the top exactly where they are', () => {
+        settle([book(), TRAPPED]);
+        pageScrolledTo(0);
+        const results = resultsHeightOf(840);
+
+        html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+
+        expect(scrollTo).not.toHaveBeenCalled();
+        expect(results.style.minHeight).toBe('');
         vi.advanceTimersByTime(250);
         http.expectOne((r) => r.url === '/api/books').flush([]);
       });
 
       it('also moves for a search, not just a filter chip', () => {
         settle([book(), TRAPPED]);
-        const controls = controlsScrolledPastBy(300);
-        const scrollIntoView = vi.fn();
-        controls.scrollIntoView = scrollIntoView;
+        pageScrolledTo(300);
 
         const search = html().querySelector<HTMLInputElement>('.library__search input')!;
         search.value = 'pirates';
         search.dispatchEvent(new Event('input'));
 
-        expect(scrollIntoView).toHaveBeenCalledOnce();
+        expect(scrollTo).toHaveBeenCalledOnce();
         vi.advanceTimersByTime(250);
         http.expectOne((r) => r.url === '/api/books').flush([TRAPPED]);
       });

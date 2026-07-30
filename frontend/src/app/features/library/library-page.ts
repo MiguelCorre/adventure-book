@@ -34,7 +34,6 @@ export class LibraryPage implements OnInit {
 
   protected readonly difficulties = DIFFICULTIES;
 
-  private readonly controls = viewChild<ElementRef<HTMLElement>>('controls');
   private readonly results = viewChild<ElementRef<HTMLElement>>('results');
 
   /** Undoes the height freeze applied while scrolling back to the controls. */
@@ -115,35 +114,40 @@ export class LibraryPage implements OnInit {
   }
 
   private narrow(): void {
-    this.revealControls();
+    this.returnToTop();
     this.reload();
   }
 
   /**
-   * Brings the search box and filter chips back into view before the results change.
+   * Glides back to the top of the page before the results change.
    *
    * <p>A shorter result set makes the document shorter, and when that happens below the
    * current scroll offset the browser clamps the page upwards instantly. Nothing can soften
    * that jump once it has happened, so the page moves first, while the old and taller list
    * is still rendered and the scroll is an ordinary smooth one.
    *
-   * <p>Moving first is not enough on its own: the scroll takes about as long as the request
-   * it races, and losing that race puts the clamp back. So the results region keeps its
-   * current height until the scroll settles. The document cannot shrink while it is held,
-   * which means there is no clamp to see; releasing it afterwards only changes the layout
-   * below the fold, where the reader is no longer looking.
+   * <p>The destination is offset zero, the one position valid at every document height.
+   * Scrolling to the controls instead was tried and abandoned: with a single row of results
+   * left the document is too short for them to reach the top of the viewport, so the
+   * browser clamped anyway and the jump came back, merely smaller.
    *
-   * <p>Does nothing when the controls are already on screen, so a reader who can see them
-   * is never moved.
+   * <p>The condition is simply whether the page is scrolled — not whether the controls are
+   * off screen, which was the first attempt and was wrong twice over. A reader cannot press
+   * a filter they cannot see, so that test excluded the very case it was meant to catch:
+   * controls in view near the foot of a page that is about to get shorter.
+   *
+   * <p>Moving first is still not enough on its own, because the scroll takes about as long
+   * as the request it races. So the results region keeps its current height until the
+   * scroll settles: the document cannot shrink while it is held, and releasing it
+   * afterwards only changes the layout below the fold.
    */
-  private revealControls(): void {
-    const controls = this.controls()?.nativeElement;
+  private returnToTop(): void {
     const results = this.results()?.nativeElement;
 
     // Any previous freeze is undone first, so the height measured below is the natural one.
     this.releaseHeight?.();
 
-    if (!controls || !results || controls.getBoundingClientRect().top >= 0) {
+    if (!results || window.scrollY <= 0) {
       return;
     }
 
@@ -155,18 +159,17 @@ export class LibraryPage implements OnInit {
       results.style.minHeight = '';
       this.releaseHeight = null;
     };
-    // scrollend is the accurate signal; the timer covers browsers that never send it.
-    const fallback = setTimeout(release, 700);
+    // scrollend is the accurate signal; the timer only covers browsers that never send it,
+    // so it is set well beyond the longest plausible smooth scroll. Releasing early would
+    // shorten the document mid-animation, which is the clamp this exists to prevent.
+    const fallback = setTimeout(release, 1500);
     window.addEventListener('scrollend', release, { once: true });
     this.releaseHeight = release;
 
     const prefersReducedMotion =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    controls.scrollIntoView({
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-      block: 'start',
-    });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
   }
 
   protected isSelected(difficulty: Difficulty): boolean {

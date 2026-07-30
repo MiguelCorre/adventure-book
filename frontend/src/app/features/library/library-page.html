@@ -16,7 +16,7 @@
     unique paths and multiple endings based on your choices.
   </p>
 
-  <div class="library__controls">
+  <div class="library__controls" #controls>
     <label class="library__search">
       <span class="visually-hidden">Search adventures</span>
       <input
@@ -52,7 +52,7 @@
     </p>
   }
 
-  <div class="library__results" [class.library__results--refreshing]="refreshing()">
+  <div class="library__results" #results [class.library__results--refreshing]="refreshing()">
     <div class="library__progress" [class.library__progress--active]="refreshing()" aria-hidden="true"></div>
 
     @if (initialLoading()) {

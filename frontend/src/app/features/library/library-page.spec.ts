@@ -184,6 +184,98 @@ describe('LibraryPage', () => {
       http.expectOne((r) => r.url === '/api/books').flush([]);
     });
 
+    /**
+     * A shorter result set shortens the document, and the browser clamps the scroll
+     * position upwards instantly when that happens below the current offset. The page
+     * moves first, while the taller list is still rendered, so the jump never shows.
+     */
+    describe('scroll position', () => {
+      function controlsScrolledPastBy(pixels: number): HTMLElement {
+        const controls = html().querySelector<HTMLElement>('.library__controls')!;
+        controls.getBoundingClientRect = () => ({ top: -pixels, bottom: 0, left: 0, right: 0,
+          width: 0, height: 0, x: 0, y: -pixels, toJSON: () => ({}) }) as DOMRect;
+        return controls;
+      }
+
+      it('brings the controls back into view before the results shrink', () => {
+        settle([book(), TRAPPED]);
+        const controls = controlsScrolledPastBy(400);
+        const scrollIntoView = vi.fn();
+        controls.scrollIntoView = scrollIntoView;
+
+        html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([]);
+      });
+
+      it('holds the height until the scroll settles, so the document cannot shrink under it', () => {
+        settle([book(), TRAPPED]);
+        const controls = controlsScrolledPastBy(400);
+        controls.scrollIntoView = vi.fn();
+        const results = html().querySelector<HTMLElement>('.library__results')!;
+        Object.defineProperty(results, 'offsetHeight', { value: 840, configurable: true });
+
+        html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+        expect(results.style.minHeight).toBe('840px');
+
+        // Results arriving does not release it: the scroll may still be in flight.
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([]);
+        fixture.detectChanges();
+        expect(results.style.minHeight).toBe('840px');
+
+        window.dispatchEvent(new Event('scrollend'));
+        expect(results.style.minHeight).toBe('');
+      });
+
+      it('releases the height even if the browser never reports the scroll ending', () => {
+        settle([book(), TRAPPED]);
+        const controls = controlsScrolledPastBy(400);
+        controls.scrollIntoView = vi.fn();
+        const results = html().querySelector<HTMLElement>('.library__results')!;
+        Object.defineProperty(results, 'offsetHeight', { value: 840, configurable: true });
+
+        html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+        expect(results.style.minHeight).toBe('840px');
+
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([]);
+        vi.advanceTimersByTime(700);
+
+        expect(results.style.minHeight).toBe('');
+      });
+
+      it('leaves a reader who can already see the controls where they are', () => {
+        settle([book(), TRAPPED]);
+        const controls = controlsScrolledPastBy(-50); // still below the viewport top
+        const scrollIntoView = vi.fn();
+        controls.scrollIntoView = scrollIntoView;
+
+        html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
+
+        expect(scrollIntoView).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([]);
+      });
+
+      it('also moves for a search, not just a filter chip', () => {
+        settle([book(), TRAPPED]);
+        const controls = controlsScrolledPastBy(300);
+        const scrollIntoView = vi.fn();
+        controls.scrollIntoView = scrollIntoView;
+
+        const search = html().querySelector<HTMLInputElement>('.library__search input')!;
+        search.value = 'pirates';
+        search.dispatchEvent(new Event('input'));
+
+        expect(scrollIntoView).toHaveBeenCalledOnce();
+        vi.advanceTimersByTime(250);
+        http.expectOne((r) => r.url === '/api/books').flush([TRAPPED]);
+      });
+    });
+
     it('clears the busy state once the new results arrive', () => {
       settle([book()]);
       startRefining();

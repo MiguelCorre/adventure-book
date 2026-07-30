@@ -19,8 +19,13 @@ public record ValidationReport(List<ValidationIssue> issues) {
         return VALID;
     }
 
+    /**
+     * @param reason the underlying parse failure, folded into a sentence so the library
+     *               shows the reader a complete explanation rather than a bare fragment
+     */
     public static ValidationReport unreadable(String reason) {
-        return new ValidationReport(List.of(ValidationIssue.of(ValidationRule.UNREADABLE, reason)));
+        String message = "%s: %s".formatted(ValidationRule.UNREADABLE.description(), reason);
+        return new ValidationReport(List.of(ValidationIssue.of(ValidationRule.UNREADABLE, message)));
     }
 
     public boolean isValid() {

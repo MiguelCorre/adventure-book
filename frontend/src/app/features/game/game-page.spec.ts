@@ -192,6 +192,28 @@ describe('GamePage', () => {
     expect(html().querySelectorAll('.choice').length).toBe(0);
   });
 
+  /**
+   * The router reuses this component when only the route parameter changes, so loading has
+   * to follow the id. Without that, pressing Try Again or going back in history left the
+   * address bar and the screen describing two different play-throughs.
+   */
+  it('loads the new game when the route id changes without the component being rebuilt', () => {
+    open(game({ status: 'DEAD', health: 0 }));
+    expect(html().querySelector('app-game-over')).not.toBeNull();
+
+    fixture.componentRef.setInput('gameId', 'game-2');
+    fixture.detectChanges();
+
+    const request = http.expectOne('/api/games/game-2');
+    expect(request.request.method).toBe('GET');
+    request.flush(game({ gameId: 'game-2', health: 10, status: 'IN_PROGRESS' }));
+    fixture.detectChanges();
+
+    expect(html().querySelector('app-game-over')).toBeNull();
+    expect(html().querySelector('app-game-header')?.textContent).toContain('10/10');
+    expect(html().querySelectorAll('.choice').length).toBe(2);
+  });
+
   it('reports a game that could not be opened', () => {
     http.expectOne('/api/games/game-1').flush(
       { title: 'Not found', detail: "No game with id 'game-1'" },

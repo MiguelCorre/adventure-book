@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
+import { Component, OnDestroy, effect, inject, input } from '@angular/core';
 
 import { GameOver } from './game-over';
 import { GameHeader } from './game-header';
@@ -12,14 +12,18 @@ import { SectionPanel } from './section-view';
   templateUrl: './game-page.html',
   styleUrl: './game-page.scss',
 })
-export class GamePage implements OnInit, OnDestroy {
+export class GamePage implements OnDestroy {
   /** Bound from the route by withComponentInputBinding(). */
   readonly gameId = input.required<string>();
 
   protected readonly store = inject(GameStore);
 
-  ngOnInit(): void {
-    this.store.load(this.gameId());
+  constructor() {
+    // Loading follows the id rather than happening once on init. The router reuses this
+    // component when only the route parameter changes — pressing Try Again, or going back
+    // in history — so ngOnInit would fire for the first game and never again, leaving the
+    // address bar and the screen describing two different play-throughs.
+    effect(() => this.store.load(this.gameId()));
   }
 
   ngOnDestroy(): void {

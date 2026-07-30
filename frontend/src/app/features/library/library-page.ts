@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, switchMap } from 'rxjs';
+import { Subject, debounce, of, switchMap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { BooksApi } from '../../core/books-api';
@@ -60,15 +60,19 @@ export class LibraryPage implements OnInit {
   /** Placeholder cards for the first paint; the count is arbitrary, it just fills the grid. */
   protected readonly skeletons = [0, 1, 2, 3, 4, 5];
 
-  /** Typing should not fire a request per keystroke, nor repeat an unchanged search. */
-  private readonly searches = new Subject<void>();
+  /**
+   * One stream for every way the library is narrowed. Typing waits out the debounce so a
+   * request is not fired per keystroke; a click on a chip is a discrete intention and goes
+   * straight through. Either way, a newer narrowing cancels the one in flight.
+   */
+  private readonly searches = new Subject<boolean>();
 
   constructor() {
     this.destroyRef.onDestroy(() => this.releaseHeight?.());
 
     this.searches
       .pipe(
-        debounceTime(250),
+        debounce((immediate) => (immediate ? of(0) : timer(250))),
         switchMap(() => this.booksApi.list(this.query(), this.selectedDifficulties())),
         takeUntilDestroyed(),
       )
@@ -89,9 +93,9 @@ export class LibraryPage implements OnInit {
     this.reload();
   }
 
-  protected reload(): void {
+  protected reload(immediate = true): void {
     this.loading.set(true);
-    this.searches.next();
+    this.searches.next(immediate);
   }
 
   private settle(): void {
@@ -101,7 +105,7 @@ export class LibraryPage implements OnInit {
 
   protected onSearch(value: string): void {
     this.query.set(value);
-    this.narrow();
+    this.narrow(false);
   }
 
   protected toggleDifficulty(difficulty: Difficulty): void {
@@ -110,12 +114,12 @@ export class LibraryPage implements OnInit {
         ? selected.filter((entry) => entry !== difficulty)
         : [...selected, difficulty],
     );
-    this.narrow();
+    this.narrow(true);
   }
 
-  private narrow(): void {
+  private narrow(immediate: boolean): void {
     this.returnToTop();
-    this.reload();
+    this.reload(immediate);
   }
 
   /**

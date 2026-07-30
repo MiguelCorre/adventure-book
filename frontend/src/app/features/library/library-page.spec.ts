@@ -64,6 +64,7 @@ describe('LibraryPage', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('lists every book the API returns', () => {
@@ -132,12 +133,12 @@ describe('LibraryPage', () => {
     request.flush([book()]);
   });
 
-  it('sends the selected difficulty when a filter chip is pressed', () => {
+  it('applies a filter chip immediately, without the typing debounce', () => {
     settle([book()]);
 
     html().querySelectorAll<HTMLButtonElement>('.chip')[0].click();
 
-    vi.advanceTimersByTime(250);
+    // No timers advanced: a click is a discrete intention, so the request is already out.
     const request = http.expectOne((r) => r.url === '/api/books');
     expect(request.request.params.get('difficulty')).toBe('EASY');
     request.flush([]);
@@ -344,4 +345,5 @@ describe('LibraryPage', () => {
     expect(request.request.body).toEqual({ bookSlug: 'clockwork-lighthouse', fromSave: true });
     request.flush({ gameId: 'game-2' });
   });
+
 });

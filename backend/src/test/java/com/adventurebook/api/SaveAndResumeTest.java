@@ -159,4 +159,30 @@ class SaveAndResumeTest {
         mockMvc.perform(post("/api/games/1e2d3c4b-0000-0000-0000-000000000000/save"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void discardingASaveTakesTheContinueOfferAway() throws Exception {
+        String gameId = start("clockwork-lighthouse", false).get("gameId").asString();
+        mockMvc.perform(post("/api/games/%s/save".formatted(gameId))).andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/books/clockwork-lighthouse"))
+                .andExpect(jsonPath("$.hasSave").value(true));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .delete("/api/books/clockwork-lighthouse/save"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/books/clockwork-lighthouse"))
+                .andExpect(jsonPath("$.hasSave").value(false));
+        mockMvc.perform(post("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"bookSlug\":\"clockwork-lighthouse\",\"fromSave\":true}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void discardingABookThatWasNeverSavedIsANoOp() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .delete("/api/books/sunken-orchard/save"))
+                .andExpect(status().isNoContent());
+    }
 }

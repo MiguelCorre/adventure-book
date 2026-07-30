@@ -32,4 +32,9 @@ export class BooksApi {
     body.append('file', file);
     return this.http.post<BookSummary>('/api/books', body);
   }
+
+  /** Forgets the saved progress for a book. Idempotent on the server. */
+  discardSave(slug: string): Observable<void> {
+    return this.http.delete<void>(`/api/books/${encodeURIComponent(slug)}/save`);
+  }
 }

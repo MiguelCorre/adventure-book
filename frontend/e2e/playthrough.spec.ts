@@ -83,13 +83,21 @@ test('saved progress survives and resumes on the same section', async ({ page })
 
   await page.getByRole('button', { name: /Back to Library/ }).click();
   const orchard = page.locator('app-book-card').filter({ hasText: 'The Sunken Orchard' });
-  await expect(orchard.getByText('Saved')).toBeVisible();
+  await expect(orchard.getByText('Saved', { exact: true })).toBeVisible();
 
   await orchard.getByRole('button', { name: 'Continue' }).click();
 
   await expect(page.locator('.section__text').filter({ hasText: /trees are not dead so much as sleeping/ }))
     .toHaveCount(1);
   await expectHealth(page, '10/10');
+
+  // Discarding asks first — a real browser dialog — then the offer to continue is gone.
+  await page.getByRole('button', { name: /Back to Library/ }).click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await orchard.getByRole('button', { name: 'Discard saved progress' }).click();
+
+  await expect(orchard.getByRole('button', { name: 'Continue' })).toHaveCount(0);
+  await expect(orchard.getByText('Saved', { exact: true })).toHaveCount(0);
 });
 
 /**

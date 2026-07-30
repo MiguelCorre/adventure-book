@@ -1,5 +1,7 @@
 # Adventure Book
 
+[![CI](https://github.com/MiguelCorre/adventure-book/actions/workflows/ci.yml/badge.svg)](https://github.com/MiguelCorre/adventure-book/actions/workflows/ci.yml)
+
 An interactive adventure book: pick a story, read a section, choose what happens next, and
 try to reach an ending before your health runs out.
 
@@ -47,7 +49,7 @@ cd backend && ./mvnw verify
 cd frontend && npm test
 ```
 
-129 backend tests and 58 frontend tests. Both suites run without a database, a browser or a
+135 backend tests and 63 frontend tests. Both suites run without a database, a browser or a
 network connection.
 
 End-to-end, in a real browser (starts both halves of the application itself):
@@ -157,6 +159,7 @@ The git history follows the same order.
 | `POST` | `/api/games/{id}/choices` | take a turn |
 | `GET` | `/api/games/{id}` | current state |
 | `POST` | `/api/games/{id}/save` | save progress |
+| `DELETE` | `/api/books/{slug}/save` | discard saved progress (idempotent) |
 
 Failures are [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) problem documents.
 A rejected upload carries the full list of validation issues in an `issues` property.
@@ -199,8 +202,9 @@ losing it on restart costs nothing that cannot be rebuilt. Progress worth keepin
 saving is for, so it goes to a file-backed database — and survives a restart, which is
 worth checking by hand.
 
-**One save slot per book.** A bookmark, not a history. Saving again overwrites, which keeps
-the library card down to a single *Continue*.
+**One save slot per book.** A bookmark, not a history. Saving again overwrites, and the
+card offers a single *Continue* plus a way to discard the slot — the one destructive act
+in the interface, and the only one that asks for confirmation first.
 
 **An uploaded file never names itself on disk.** The stored filename is derived from the
 book's own title through an allow-list of characters. A client-supplied filename is

@@ -78,3 +78,17 @@
     flex: 1;
   }
 }
+
+.card__discard {
+  align-self: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--invalid-ink);
+  }
+}

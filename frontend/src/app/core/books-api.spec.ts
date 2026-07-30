@@ -80,6 +80,14 @@ describe('BooksApi', () => {
     request.flush(A_BOOK);
   });
 
+  it('discards a save with a DELETE against the book', () => {
+    api.discardSave('clockwork-lighthouse').subscribe();
+
+    const request = http.expectOne('/api/books/clockwork-lighthouse/save');
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
+
   it('posts an uploaded file as multipart form data', () => {
     const file = new File(['{}'], 'book.json', { type: 'application/json' });
 

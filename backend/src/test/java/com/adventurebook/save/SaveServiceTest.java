@@ -1,6 +1,7 @@
 package com.adventurebook.save;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Clock;
@@ -106,5 +107,10 @@ class SaveServiceTest {
         service.discard("lighthouse");
 
         assertThat(service.exists("lighthouse")).isFalse();
+    }
+
+    @Test
+    void discardingABookThatWasNeverSavedIsANoOp() {
+        assertThatCode(() -> service.discard("never-played")).doesNotThrowAnyException();
     }
 }

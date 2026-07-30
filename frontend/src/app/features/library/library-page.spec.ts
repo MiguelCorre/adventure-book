@@ -346,4 +346,42 @@ describe('LibraryPage', () => {
     request.flush({ gameId: 'game-2' });
   });
 
+  describe('discarding a save', () => {
+    it('offers to discard when a save exists', () => {
+      settle([book({ hasSave: true })]);
+
+      expect(html().querySelector('.card__discard')).not.toBeNull();
+    });
+
+    it('makes no such offer without a save', () => {
+      settle([book({ hasSave: false })]);
+
+      expect(html().querySelector('.card__discard')).toBeNull();
+    });
+
+    it('deletes the save and refreshes after the reader confirms', () => {
+      settle([book({ hasSave: true })]);
+      vi.stubGlobal('confirm', vi.fn(() => true));
+
+      html().querySelector<HTMLButtonElement>('.card__discard')!.click();
+
+      http.expectOne('/api/books/clockwork-lighthouse/save').flush(null);
+      // The refresh is immediate, and the returned list no longer offers Continue.
+      http.expectOne((r) => r.url === '/api/books').flush([book({ hasSave: false })]);
+      fixture.detectChanges();
+      expect(html().querySelector('.card__continue')).toBeNull();
+      expect(html().querySelector('.card__discard')).toBeNull();
+    });
+
+    it('keeps the save when the reader declines', () => {
+      settle([book({ hasSave: true })]);
+      vi.stubGlobal('confirm', vi.fn(() => false));
+
+      html().querySelector<HTMLButtonElement>('.card__discard')!.click();
+
+      http.expectNone('/api/books/clockwork-lighthouse/save');
+      expect(html().querySelector('.card__continue')).not.toBeNull();
+    });
+  });
+
 });

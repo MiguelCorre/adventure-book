@@ -200,6 +200,20 @@ export class LibraryPage implements OnInit {
     this.openGame(book, true);
   }
 
+  /**
+   * Discarding is the one destructive act on this page — a misclick would erase real
+   * progress — so it alone asks first.
+   */
+  protected discardSave(book: BookSummary): void {
+    if (!window.confirm(`Discard your saved progress in "${book.title}"?`)) {
+      return;
+    }
+    this.booksApi.discardSave(book.slug).subscribe({
+      next: () => this.reload(),
+      error: (failure) => this.error.set(messageOf(failure, 'The save could not be discarded.')),
+    });
+  }
+
   private openGame(book: BookSummary, fromSave: boolean): void {
     this.error.set(null);
     this.gamesApi.start(book.slug, fromSave).subscribe({

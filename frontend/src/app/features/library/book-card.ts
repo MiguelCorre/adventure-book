@@ -18,6 +18,7 @@ export class BookCard {
 
   readonly begin = output<BookSummary>();
   readonly continueQuest = output<BookSummary>();
+  readonly discardSave = output<BookSummary>();
 
   protected readonly issuesExpanded = signal(false);
 

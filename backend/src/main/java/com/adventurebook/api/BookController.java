@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,5 +76,19 @@ public class BookController {
     @ResponseStatus(HttpStatus.CREATED)
     public BookSummary upload(@RequestPart("file") MultipartFile file) throws IOException {
         return BookSummary.from(uploads.add(file.getBytes()), false);
+    }
+
+    /**
+     * Forgets the saved progress for a book.
+     *
+     * <p>Idempotent on purpose: deleting a slot that is already empty is a no-op, not an
+     * error, so repeating the request cannot change the outcome. The slug is not checked
+     * against the library either — a save may outlive its book if the file is removed from
+     * the directory, and this must still be able to clean it up.
+     */
+    @DeleteMapping("/{slug}/save")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void discardSave(@PathVariable String slug) {
+        saves.discard(slug);
     }
 }

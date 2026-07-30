@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.adventurebook.api.dto.ValidationIssueView;
 import com.adventurebook.book.BookNotFoundException;
@@ -21,14 +22,19 @@ import com.adventurebook.game.GameExceptions.SectionNotFoundException;
 import com.adventurebook.save.NoSavedProgressException;
 
 /**
- * Turns domain failures into RFC 7807 responses.
+ * Turns failures into RFC 7807 responses.
  *
- * <p>Each status is chosen to tell the client something it can act on: 404 the thing is
- * not here, 409 you are too late, 422 the request was understood but the content will not
- * allow it.
+ * <p>Each status is chosen to tell the client something it can act on: 400 the request was
+ * malformed, 404 the thing is not here, 409 you are too late, 422 the request was
+ * understood but the content will not allow it.
+ *
+ * <p>Extends {@link ResponseEntityExceptionHandler} so that Spring's own well-typed
+ * failures — an unparseable body, a validation violation, a path variable that is not a
+ * UUID — keep their proper 4xx status. Without it the catch-all below would answer 500 to
+ * every one of them, blaming the server for the caller's mistake.
  */
 @RestControllerAdvice
-public class ApiExceptionHandler {
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
     private static final String TYPE_PREFIX = "https://adventure-book/problems/";
@@ -74,6 +80,10 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.CONFLICT, "Book already exists", e.getMessage(), "book-exists");
     }
 
+    /**
+     * Last resort. Anything reaching here is a defect on our side, so it is logged in full
+     * and the caller is told nothing about our internals.
+     */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception e) {
         log.error("Unhandled failure serving request", e);

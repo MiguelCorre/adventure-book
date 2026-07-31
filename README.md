@@ -253,9 +253,12 @@ when full, so abandoned tabs cannot make memory usage grow without limit.
 
 **One save slot per book.** A bookmark, not a history. Saving again overwrites, and the
 card offers a single *Continue* plus a way to discard the slot — the one destructive act
-in the interface, and the only one that asks for confirmation first. H2's atomic `MERGE`
-writes the slot in one statement, so simultaneous first saves cannot race through a
-check-then-insert and turn one valid request into a primary-key error.
+in the interface, and the only one that asks for confirmation first. Persistence uses
+Spring Data JPA merge semantics rather than dialect-specific SQL, keeping this code portable
+from embedded H2 to Oracle. Same-book saves are serialized per application instance before
+the repository transaction begins, so simultaneous first saves cannot race. In a
+horizontally scaled Oracle deployment, that boundary would move to the database through an
+Oracle `MERGE` or a unique-constraint retry policy.
 
 **An uploaded file never names itself on disk.** The stored filename is derived from the
 book's own title through an allow-list of characters. A client-supplied filename is

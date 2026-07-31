@@ -4,6 +4,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,8 @@ public class SaveService {
 
     private final GameSaveRepository saves;
     private final Clock clock;
+    /** Retained per slug so a waiting thread can never be handed a replacement lock. */
+    private final ConcurrentMap<String, ReentrantLock> saveLocks = new ConcurrentHashMap<>();
 
     @Autowired
     public SaveService(GameSaveRepository saves) {
@@ -42,16 +47,20 @@ public class SaveService {
      * <p>Refuses a finished adventure: resuming it would only put the player back on a
      * screen with nothing left to do.
      */
-    @Transactional
     public GameSave save(GameSession session) {
         if (session.status().isFinished()) {
             throw new GameFinishedException(session.status());
         }
 
-        Instant savedAt = clock.instant();
-        saves.upsert(session.bookSlug(), session.sectionId(), session.health(), savedAt);
-        return saves.findById(session.bookSlug()).orElseThrow(() -> new IllegalStateException(
-                "Save for book '%s' disappeared after it was written".formatted(session.bookSlug())));
+        ReentrantLock saveLock = saveLocks.computeIfAbsent(session.bookSlug(), ignored -> new ReentrantLock());
+        saveLock.lock();
+        try {
+            Instant savedAt = clock.instant();
+            return saves.saveAndFlush(
+                    new GameSave(session.bookSlug(), session.sectionId(), session.health(), savedAt));
+        } finally {
+            saveLock.unlock();
+        }
     }
 
     @Transactional(readOnly = true)

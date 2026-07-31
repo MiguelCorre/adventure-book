@@ -6,8 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  * scroll behaviour in particular can only be proved here.
  *
  * Both halves of the application are started for the run. The backend gets an in-memory
- * database so a run can never inherit saved games from a previous one, and reads the real
- * books directory, because the state of those six files is part of what is being asserted.
+ * database so a run can never inherit saved games from a previous one. The npm lifecycle
+ * also gives it a scratch copy of the real books, allowing upload tests to write freely
+ * without changing the working tree.
  */
 // The wrapper lives in the backend directory and is invoked from there, so it needs an
 // explicit relative path on both platforms.
@@ -33,10 +34,11 @@ export default defineConfig({
 
   webServer: [
     {
-      command: `${mavenWrapper} -B spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:e2e"`,
+      command: `${mavenWrapper} -B spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:e2e --adventure.books-dir=target/e2e-books"`,
       cwd: '../backend',
       url: 'http://localhost:8080/api/books',
-      reuseExistingServer: !process.env.CI,
+      // Reusing a developer's backend could make the upload spec write into real books/.
+      reuseExistingServer: false,
       timeout: 240_000,
       stdout: 'ignore',
       stderr: 'pipe',
@@ -44,7 +46,7 @@ export default defineConfig({
     {
       command: 'npm start',
       url: 'http://localhost:4200',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 180_000,
       stdout: 'ignore',
       stderr: 'pipe',

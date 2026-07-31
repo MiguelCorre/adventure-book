@@ -58,11 +58,13 @@ End-to-end, in a real browser (starts both halves of the application itself):
 cd frontend && npm run e2e:install && npm run e2e
 ```
 
-15 specs covering the ground the unit suites structurally cannot reach: what is actually
+16 specs covering the ground the unit suites structurally cannot reach: what is actually
 painted, real browser history, and real layout. They found three defects that unit tests
 had no way to see — a duplicated ending passage, choices offered to a dead player, and a
 scroll position that jumped when the result set shrank. The backend runs against an
-in-memory database for these, so a run never inherits saved games from the last one.
+in-memory database for these, so a run never inherits saved games from the last one. Its
+book catalogue is a disposable copy under `backend/target/`, recreated before the suite and
+removed afterwards, so the successful-upload scenario never changes the working tree.
 
 ---
 
@@ -224,9 +226,6 @@ directly.
 ## Not included
 
 - **Authentication.** Single player by design; saves are global.
-- **A successful upload end-to-end.** There is no delete endpoint, so the happy path would
-  leave a book behind in the working tree on every run. It is covered by `BookUploadTest`
-  instead, which uses a scratch directory it can clean up.
 - **Watching the books directory.** Reloading happens on startup and after an upload, which
   is predictable and avoids reacting to a half-written file.
 

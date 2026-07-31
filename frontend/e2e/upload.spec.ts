@@ -10,12 +10,6 @@ const BROKEN_BOOK = JSON.stringify({
   ],
 });
 
-/**
- * Only rejections are exercised here, on purpose. A successful upload writes a file into
- * the books directory and there is no delete endpoint to undo it, so the happy path would
- * leave a book behind in the working tree on every run. It is covered instead by
- * BookUploadTest, which points the application at a scratch directory it can clean up.
- */
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('app-book-card').first()).toBeVisible();
@@ -58,4 +52,41 @@ test('a file that is not a book at all is refused politely', async ({ page }) =>
   // The parser's own wording is not asserted, only that the reader is told the file could
   // not be read at all rather than which rule it broke.
   await expect(page.getByRole('alert')).toContainText('could not be read as an adventure book');
+});
+
+test('an accepted book is published immediately and can be played', async ({ page }, testInfo) => {
+  // A retry gets a fresh slug in case the first attempt reached the server before failing.
+  const title = testInfo.retry === 0 ? 'The Brass Meridian' : `The Brass Meridian ${testInfo.retry}`;
+  const validBook = JSON.stringify({
+    title,
+    author: 'Mara Vale',
+    difficulty: 'EASY',
+    sections: [
+      {
+        id: 1,
+        text: 'A brass compass draws a line across the empty dawn.',
+        type: 'BEGIN',
+        options: [{ description: 'Follow the shining meridian', gotoId: 2 }],
+      },
+      {
+        id: 2,
+        text: 'At noon, the line folds into a road home.',
+        type: 'END',
+        options: [],
+      },
+    ],
+  });
+  const booksBefore = await page.locator('app-book-card').count();
+
+  await upload(page, 'brass-meridian.json', validBook);
+
+  const card = page.locator('app-book-card').filter({ hasText: title });
+  await expect(page.locator('app-book-card')).toHaveCount(booksBefore + 1);
+  await expect(card).toHaveCount(1);
+  await expect(card.getByText('EASY', { exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Begin Quest' })).toBeEnabled();
+
+  await card.getByRole('button', { name: 'Begin Quest' }).click();
+  await expect(page).toHaveURL(/\/play\//);
+  await expect(page.getByText('A brass compass draws a line across the empty dawn.')).toBeVisible();
 });

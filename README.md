@@ -14,7 +14,7 @@ Java 21 / Spring Boot backend, Angular frontend.
 | Tool | Version | Notes |
 | ---- | ------- | ----- |
 | JDK | 21+ | `java -version` |
-| Node.js | 20+ | `node -v` |
+| Node.js | `^22.22.3 \|\| ^24.15.0 \|\| >=26.0.0` | `node -v` |
 
 Maven is **not** required — the project ships the Maven wrapper.
 

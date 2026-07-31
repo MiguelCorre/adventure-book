@@ -16,7 +16,29 @@ Java 21 / Spring Boot 4.1.0 backend, Angular 22 frontend.
 | JDK | 21+ | `java -version` |
 | Node.js | `^22.22.3 \|\| ^24.15.0 \|\| >=26.0.0` | `node -v` |
 
-Maven is **not** required — the project ships the Maven wrapper.
+Maven is **not** required — the project ships the Maven wrapper. In the commands below,
+Windows PowerShell users should replace `./mvnw` with `.\mvnw.cmd`.
+
+## Build
+
+Build and test the executable backend jar:
+
+```bash
+cd backend
+./mvnw clean package
+```
+
+The jar is written to `backend/target/adventure-book-0.0.1-SNAPSHOT.jar`.
+
+Install the locked frontend dependencies and create a production build:
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
+The static frontend is written to `frontend/dist/frontend/`.
 
 ## Run it
 
@@ -25,15 +47,16 @@ Two terminals.
 **Backend** (http://localhost:8080):
 
 ```bash
-cd backend && ./mvnw spring-boot:run
+cd backend
+./mvnw spring-boot:run
 ```
-
-On Windows use `mvnw.cmd spring-boot:run`.
 
 **Frontend** (http://localhost:4200):
 
 ```bash
-cd frontend && npm ci && npm start
+cd frontend
+npm ci
+npm start
 ```
 
 Then open http://localhost:4200. The dev server proxies `/api` to the backend, so both need
@@ -42,20 +65,25 @@ to be running.
 ## Tests
 
 ```bash
-cd backend && ./mvnw verify
+cd backend
+./mvnw verify
 ```
 
 ```bash
-cd frontend && npm test
+cd frontend
+npm test
 ```
 
-148 backend tests and 75 frontend tests. Both suites run without a database, a browser or a
-network connection.
+148 backend tests and 75 frontend tests. Once dependencies are installed, both suites run
+without an external database, a browser or a network connection; backend persistence tests
+use embedded H2.
 
 End-to-end, in a real browser (starts both halves of the application itself):
 
 ```bash
-cd frontend && npm run e2e:install && npm run e2e
+cd frontend
+npm run e2e:install
+npm run e2e
 ```
 
 16 specs covering the ground the unit suites structurally cannot reach: what is actually

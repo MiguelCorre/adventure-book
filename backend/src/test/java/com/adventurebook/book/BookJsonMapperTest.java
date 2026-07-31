@@ -220,6 +220,42 @@ class BookJsonMapperTest {
         }
 
         @Test
+        void rejectsASectionWithoutText() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Missing text", "sections": [
+                      { "id": 1, "type": "END" }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("section text is required");
+        }
+
+        @Test
+        void rejectsASectionWithoutAType() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Missing type", "sections": [
+                      { "id": 1, "text": "Where am I?" }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("section type is required");
+        }
+
+        @Test
+        void rejectsAChoiceWithoutADescription() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Missing choice text", "sections": [
+                      { "id": 1, "text": "Choose.", "type": "BEGIN", "options": [
+                        { "gotoId": 2 }
+                      ] },
+                      { "id": 2, "text": "Done.", "type": "END" }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("option description is required");
+        }
+
+        @Test
         void rejectsUnknownSectionType() {
             assertThatThrownBy(() -> parse("""
                     { "title": "Odd", "sections": [ { "id": 1, "text": "?", "type": "MIDDLE" } ] }

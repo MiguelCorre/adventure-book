@@ -10,13 +10,16 @@ import java.util.Optional;
  * pointing at {@code "id": "500"}). Normalising both sides to a trimmed string makes
  * the two forms equal instead of producing a phantom broken reference.
  *
- * @param description text shown on the choice button
+ * @param description text shown on the choice button; never blank
  * @param gotoId      identifier of the section this choice leads to
  * @param consequence health effect applied when taking this choice, may be {@code null}
  */
 public record Option(String description, String gotoId, Consequence consequence) {
 
     public Option {
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("option description is required");
+        }
         gotoId = SectionId.normalise(gotoId);
     }
 

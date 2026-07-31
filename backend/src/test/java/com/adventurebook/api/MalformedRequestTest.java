@@ -66,6 +66,19 @@ class MalformedRequestTest {
     }
 
     @Test
+    void rejectsAChoiceWithoutAnIndex() throws Exception {
+        mockMvc.perform(json("/api/games/1e2d3c4b-0000-0000-0000-000000000000/choices", "{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rejectsANullChoiceIndex() throws Exception {
+        mockMvc.perform(json("/api/games/1e2d3c4b-0000-0000-0000-000000000000/choices",
+                "{\"optionIndex\":null}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("a difficulty outside the enum is a bad request, not a server error")
     void rejectsAnUnknownDifficulty() throws Exception {
         mockMvc.perform(get("/api/books").param("difficulty", "SOMEWHAT_TRICKY"))

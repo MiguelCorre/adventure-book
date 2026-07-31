@@ -21,6 +21,10 @@ import org.springframework.stereotype.Service;
  * rejected upload leaves the library exactly as it was and the curator gets the whole
  * list of problems back in one response.
  *
+ * <p>Uploads are serialized so writing the file and publishing the reloaded catalogue
+ * form one transaction. Otherwise an older concurrent reload could overwrite the cache
+ * snapshot produced by a newer upload.
+ *
  * <p>The filename on disk is derived from the book's own title, never from the uploaded
  * filename. A client-supplied name is untrusted input and would be a path traversal
  * waiting to happen; a slug built from an allow-list of characters cannot escape the
@@ -51,6 +55,10 @@ public class BookUploadService {
         }
 
         String slug = slugOf(book.title());
+        return store(slug, content);
+    }
+
+    private synchronized LoadedBook store(String slug, byte[] content) {
         if (repository.exists(slug)) {
             throw new BookSlugConflictException(slug);
         }

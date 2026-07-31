@@ -3,11 +3,15 @@ package com.adventurebook.book;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class BookJsonMapperTest {
 
@@ -223,11 +227,24 @@ class BookJsonMapperTest {
         void rejectsASectionWithoutText() {
             assertThatThrownBy(() -> parse("""
                     { "title": "Missing text", "sections": [
-                      { "id": 1, "type": "END" }
+                      { "id": 10, "text": "Start.", "type": "BEGIN", "options": [] },
+                      { "id": 20, "type": "END" }
                     ] }
                     """))
                     .isInstanceOf(BookParseException.class)
-                    .hasMessageContaining("section text is required");
+                    .hasMessageStartingWith("section '20' text is required")
+                    .hasMessageContaining("sections[1]")
+                    .hasMessageContaining("line");
+        }
+
+        @Test
+        void identifiesTheSourceFilename(@TempDir Path books) throws IOException {
+            Path source = books.resolve("broken-book.json");
+            Files.writeString(source, "{ invalid", StandardCharsets.UTF_8);
+
+            assertThatThrownBy(() -> mapper.read(source))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageStartingWith("broken-book.json: ");
         }
 
         @Test
@@ -238,7 +255,7 @@ class BookJsonMapperTest {
                     ] }
                     """))
                     .isInstanceOf(BookParseException.class)
-                    .hasMessageContaining("section type is required");
+                    .hasMessageContaining("section '1' type is required");
         }
 
         @Test

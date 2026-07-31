@@ -15,10 +15,10 @@ public record Section(String id, String text, SectionType type, List<Option> opt
     public Section {
         id = SectionId.normalise(id);
         if (text == null || text.isBlank()) {
-            throw new IllegalArgumentException("section text is required");
+            throw new IllegalArgumentException(requiredField(id, "text"));
         }
         if (type == null) {
-            throw new IllegalArgumentException("section type is required");
+            throw new IllegalArgumentException(requiredField(id, "type"));
         }
         options = options == null ? List.of() : List.copyOf(options);
     }
@@ -33,5 +33,10 @@ public record Section(String id, String text, SectionType type, List<Option> opt
 
     public boolean hasOptions() {
         return !options.isEmpty();
+    }
+
+    private static String requiredField(String id, String field) {
+        return id == null ? "section %s is required".formatted(field)
+                : "section '%s' %s is required".formatted(id, field);
     }
 }

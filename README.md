@@ -84,7 +84,7 @@ cd frontend
 npm test
 ```
 
-148 backend tests and 75 frontend tests. Once dependencies are installed, both suites run
+149 backend tests and 75 frontend tests. Once dependencies are installed, both suites run
 without an external database, a browser or a network connection; backend persistence tests
 use embedded H2.
 
@@ -165,6 +165,9 @@ pins the findings down:
 | `the-prisoner.json` | section `666` is a `NODE` with no way out |
 | `crystal-caverns.json` | the same trap, and this one is reachable, from section `900` |
 | `pirates-jade-sea.json` | **both** opening choices are broken: `gotoId: 999` was never written, and `gotoId: 666` is another dead end |
+
+Unreadable JSON is reported with its JSON path and line/column; catalogue failures also
+name the source filename, and section invariants include the id when it was available.
 
 `the-prisoner.json` also mixes identifier types — it declares `"id": "500"` but reaches it
 with `"gotoId": 500`. That is *not* a broken reference, and reporting it as one would have

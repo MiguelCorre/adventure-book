@@ -54,7 +54,7 @@ public class GameController {
     @PostMapping("/{gameId}/save")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void save(@PathVariable UUID gameId) {
-        saves.save(games.require(gameId));
+        games.withSession(gameId, saves::save);
     }
 
     @PostMapping("/{gameId}/choices")

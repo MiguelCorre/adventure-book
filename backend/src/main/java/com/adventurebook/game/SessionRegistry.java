@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.springframework.stereotype.Component;
@@ -74,6 +75,17 @@ public class SessionRegistry {
             throw new GameNotFoundException(String.valueOf(id));
         }
         return moved;
+    }
+
+    /**
+     * Uses a stable snapshot while holding the same per-session lock as {@link #update}.
+     * A save therefore cannot read a section halfway through a concurrent move.
+     */
+    public GameSession withSession(UUID id, Consumer<GameSession> action) {
+        return update(id, session -> {
+            action.accept(session);
+            return session;
+        });
     }
 
     public Optional<GameSession> find(UUID id) {

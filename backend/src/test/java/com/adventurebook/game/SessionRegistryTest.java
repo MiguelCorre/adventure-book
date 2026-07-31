@@ -4,6 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.Test;
 
@@ -118,5 +122,39 @@ class SessionRegistryTest {
         })).isInstanceOf(IllegalStateException.class);
 
         assertThat(registry.find(id).orElseThrow().sectionId()).isEqualTo("1");
+    }
+
+    @Test
+    void aMoveWaitsUntilAnAtomicSnapshotActionHasFinished() throws Exception {
+        UUID id = UUID.randomUUID();
+        registry.put(session(id, "1", 10));
+        CountDownLatch snapshotEntered = new CountDownLatch(1);
+        CountDownLatch releaseSnapshot = new CountDownLatch(1);
+
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var snapshot = executor.submit(() -> registry.withSession(id, current -> {
+                snapshotEntered.countDown();
+                try {
+                    releaseSnapshot.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException(e);
+                }
+            }));
+            assertThat(snapshotEntered.await(1, TimeUnit.SECONDS)).isTrue();
+
+            var move = executor.submit(() -> registry.update(id,
+                    current -> session(id, "2", current.health())));
+
+            try {
+                assertThatThrownBy(() -> move.get(100, TimeUnit.MILLISECONDS))
+                        .isInstanceOf(TimeoutException.class);
+            } finally {
+                releaseSnapshot.countDown();
+            }
+
+            snapshot.get(1, TimeUnit.SECONDS);
+            assertThat(move.get(1, TimeUnit.SECONDS).sectionId()).isEqualTo("2");
+        }
     }
 }

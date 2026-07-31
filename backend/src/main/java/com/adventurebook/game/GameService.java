@@ -1,6 +1,7 @@
 package com.adventurebook.game;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,11 @@ public class GameService {
 
     public GameSession require(UUID gameId) {
         return sessions.find(gameId).orElseThrow(() -> new GameNotFoundException(String.valueOf(gameId)));
+    }
+
+    /** Runs a read-side action under the same per-session lock used by a choice. */
+    public void withSession(UUID gameId, Consumer<GameSession> action) {
+        sessions.withSession(gameId, action);
     }
 
     public LoadedBook bookOf(String slug) {

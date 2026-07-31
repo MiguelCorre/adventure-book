@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { GameState } from '../../core/models';
 import { GamePage } from './game-page';
+import { GameStore } from './game-store';
 
 function game(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -126,6 +127,38 @@ describe('GamePage', () => {
     fixture.detectChanges();
 
     expect(html().querySelector('[role="status"]')?.textContent).toContain('Progress saved.');
+  });
+
+  it('does not save a stale position while a choice is being resolved', () => {
+    open(game());
+
+    html().querySelector<HTMLButtonElement>('.choice')!.click();
+    const choice = http.expectOne('/api/games/game-1/choices');
+    fixture.detectChanges();
+
+    const save = html().querySelector<HTMLButtonElement>('.game-header__save')!;
+    expect(save.disabled).toBe(true);
+    save.click();
+    TestBed.inject(GameStore).save();
+    http.expectNone('/api/games/game-1/save');
+
+    choice.flush(game({ section: { ...game().section, id: '2' } }));
+  });
+
+  it('does not make a choice while the current position is being saved', () => {
+    open(game());
+
+    html().querySelector<HTMLButtonElement>('.game-header__save')!.click();
+    const save = http.expectOne('/api/games/game-1/save');
+    fixture.detectChanges();
+
+    const choice = html().querySelector<HTMLButtonElement>('.choice')!;
+    expect(choice.disabled).toBe(true);
+    choice.click();
+    TestBed.inject(GameStore).choose(0);
+    http.expectNone('/api/games/game-1/choices');
+
+    save.flush(null);
   });
 
   it('cancels a save that still belongs to a game being left', () => {

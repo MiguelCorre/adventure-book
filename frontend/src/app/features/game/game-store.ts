@@ -56,7 +56,7 @@ export class GameStore {
 
   choose(optionIndex: number): void {
     const current = this._state();
-    if (!current || this.finished() || this._loading()) {
+    if (!current || this.finished() || this._loading() || this._saving()) {
       return;
     }
 
@@ -70,7 +70,7 @@ export class GameStore {
 
   save(): void {
     const current = this._state();
-    if (!current) {
+    if (!current || this.finished() || this._loading() || this._saving()) {
       return;
     }
 

@@ -42,7 +42,18 @@ The static frontend is written to `frontend/dist/frontend/`.
 
 ## Run it
 
-Two terminals.
+From the repository root, start both development servers with one command:
+
+```bash
+npm start
+```
+
+The launcher installs the locked frontend dependencies, starts the backend on
+http://localhost:8080 and the frontend on http://localhost:4200. Open
+http://localhost:4200; the development server proxies `/api` to the backend. Press
+`Ctrl+C` once to stop both processes.
+
+To run either half independently, use two terminals instead.
 
 **Backend** (http://localhost:8080):
 
@@ -59,8 +70,7 @@ npm ci
 npm start
 ```
 
-Then open http://localhost:4200. The dev server proxies `/api` to the backend, so both need
-to be running.
+When using this mode, both terminals must remain running while the application is in use.
 
 ## Tests
 

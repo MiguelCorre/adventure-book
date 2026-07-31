@@ -16,7 +16,9 @@ import { messageOf } from '../../core/problem';
 export class GameStore {
   private readonly api = inject(GamesApi);
   private readonly router = inject(Router);
-  private loadSubscription?: Subscription;
+  /** The request allowed to replace the current game state: load, choice or restart. */
+  private stateSubscription?: Subscription;
+  private saveSubscription?: Subscription;
 
   private readonly _state = signal<GameState | null>(null);
   private readonly _loading = signal(false);
@@ -37,15 +39,16 @@ export class GameStore {
 
   /** Loads a game by its handle, used when the play screen is opened or reloaded. */
   load(gameId: string): void {
-    this.loadSubscription?.unsubscribe();
+    this.cancelPendingRequests();
     // A route id owns the whole screen. Keeping the previous game visible while the new
     // request is in flight is misleading, and keeping it after a failed request would let
     // the player make choices in a game that no longer matches the address bar.
     this._state.set(null);
     this._loading.set(true);
+    this._saving.set(false);
     this._error.set(null);
     this._notice.set(null);
-    this.loadSubscription = this.api.get(gameId).subscribe({
+    this.stateSubscription = this.api.get(gameId).subscribe({
       next: (state) => this.settle(state),
       error: (failure) => this.fail(failure, 'This adventure could not be opened.'),
     });
@@ -59,7 +62,7 @@ export class GameStore {
 
     this._loading.set(true);
     this._notice.set(null);
-    this.api.choose(current.gameId, optionIndex).subscribe({
+    this.stateSubscription = this.api.choose(current.gameId, optionIndex).subscribe({
       next: (state) => this.settle(state),
       error: (failure) => this.fail(failure, 'That choice could not be made.'),
     });
@@ -73,7 +76,7 @@ export class GameStore {
 
     this._saving.set(true);
     this._error.set(null);
-    this.api.save(current.gameId).subscribe({
+    this.saveSubscription = this.api.save(current.gameId).subscribe({
       next: () => {
         this._saving.set(false);
         this._notice.set('Progress saved.');
@@ -94,7 +97,7 @@ export class GameStore {
 
     this._loading.set(true);
     this._error.set(null);
-    this.api.start(current.bookSlug).subscribe({
+    this.stateSubscription = this.api.start(current.bookSlug).subscribe({
       next: (state) => {
         this.settle(state);
         void this.router.navigate(['/play', state.gameId]);
@@ -109,13 +112,20 @@ export class GameStore {
   }
 
   reset(): void {
-    this.loadSubscription?.unsubscribe();
-    this.loadSubscription = undefined;
+    this.cancelPendingRequests();
     this._state.set(null);
     this._loading.set(false);
     this._saving.set(false);
     this._error.set(null);
     this._notice.set(null);
+  }
+
+  /** No response owned by a game that has left the screen may mutate this root store. */
+  private cancelPendingRequests(): void {
+    this.stateSubscription?.unsubscribe();
+    this.stateSubscription = undefined;
+    this.saveSubscription?.unsubscribe();
+    this.saveSubscription = undefined;
   }
 
   private settle(state: GameState): void {

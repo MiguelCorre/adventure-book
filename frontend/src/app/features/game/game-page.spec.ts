@@ -128,6 +128,17 @@ describe('GamePage', () => {
     expect(html().querySelector('[role="status"]')?.textContent).toContain('Progress saved.');
   });
 
+  it('cancels a save that still belongs to a game being left', () => {
+    open(game());
+
+    html().querySelector<HTMLButtonElement>('.game-header__save')!.click();
+    const obsoleteSave = http.expectOne('/api/games/game-1/save');
+
+    fixture.destroy();
+
+    expect(obsoleteSave.cancelled).toBe(true);
+  });
+
   it('celebrates a win and offers to play again', () => {
     open(game({
       status: 'WON',
@@ -174,6 +185,17 @@ describe('GamePage', () => {
     const request = http.expectOne('/api/games');
     expect(request.request.body).toEqual({ bookSlug: 'clockwork-lighthouse', fromSave: false });
     request.flush(game({ gameId: 'game-2' }));
+  });
+
+  it('cancels a restart when the finished game is left before it completes', () => {
+    open(game({ status: 'DEAD', health: 0 }));
+
+    html().querySelector<HTMLButtonElement>('app-game-over .button--primary')!.click();
+    const obsoleteRestart = http.expectOne('/api/games');
+
+    fixture.destroy();
+
+    expect(obsoleteRestart.cancelled).toBe(true);
   });
 
   it('ignores further choices once the adventure is over', () => {
@@ -260,6 +282,24 @@ describe('GamePage', () => {
 
     expect(html().querySelector('app-game-header')?.textContent).toContain('The Second Adventure');
     expect(html().querySelectorAll('.choice').length).toBe(2);
+  });
+
+  it('cancels an in-flight choice when another game id takes ownership of the route', () => {
+    open(game());
+
+    html().querySelector<HTMLButtonElement>('.choice')!.click();
+    const obsoleteChoice = http.expectOne('/api/games/game-1/choices');
+
+    fixture.componentRef.setInput('gameId', 'game-2');
+    fixture.detectChanges();
+
+    expect(obsoleteChoice.cancelled).toBe(true);
+    http.expectOne('/api/games/game-2').flush(
+      game({ gameId: 'game-2', bookTitle: 'The Second Adventure' }),
+    );
+    fixture.detectChanges();
+
+    expect(html().querySelector('app-game-header')?.textContent).toContain('The Second Adventure');
   });
 
   it('reports a game that could not be opened', () => {

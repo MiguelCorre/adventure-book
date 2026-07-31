@@ -174,6 +174,10 @@ A rejected upload carries the full list of validation issues in an `issues` prop
 not pin their releases. This implementation uses Spring Boot 4.1.0 and Angular 22; the
 Maven POM and npm lockfile are the source of truth, and this README mirrors them.
 
+**Frontend contracts are compiled strictly.** TypeScript `strict` mode and Angular's
+`strictTemplates` are both enabled. Template references preserve concrete DOM element
+types, and status checks narrow the game-over state without opting out through `$any`.
+
 **The game is resolved on the server.** The client is told the section text, the words on
 each button and the player's health — never where a choice leads or what it will cost. A
 reader with the network tab open learns no more than a reader holding the paperback. It

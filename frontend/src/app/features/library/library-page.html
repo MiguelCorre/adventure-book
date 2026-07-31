@@ -20,10 +20,11 @@
     <label class="library__search">
       <span class="visually-hidden">Search adventures</span>
       <input
+        #searchInput
         type="search"
         placeholder="Search adventures..."
         [value]="query()"
-        (input)="onSearch($any($event.target).value)"
+        (input)="onSearch(searchInput.value)"
       />
     </label>
 

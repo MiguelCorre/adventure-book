@@ -26,9 +26,9 @@
         (choose)="store.choose($event)"
       />
 
-      @if (store.finished()) {
+      @if (game.status === 'WON' || game.status === 'DEAD') {
         <app-game-over
-          [status]="$any(game.status)"
+          [status]="game.status"
           [fatalBlow]="game.lastConsequence"
           [health]="game.health"
           [maxHealth]="game.maxHealth"

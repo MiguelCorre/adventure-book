@@ -13,8 +13,8 @@
 
       <label class="upload__field">
         <span class="visually-hidden">Book JSON file</span>
-        <input type="file" accept="application/json,.json" [disabled]="uploading()"
-               (change)="onFileSelected($any($event.target))" />
+        <input #fileInput type="file" accept="application/json,.json" [disabled]="uploading()"
+               (change)="onFileSelected(fileInput)" />
       </label>
 
       @if (uploading()) {

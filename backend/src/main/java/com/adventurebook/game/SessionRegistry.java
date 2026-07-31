@@ -77,15 +77,14 @@ public class SessionRegistry {
         return moved;
     }
 
-    /**
-     * Uses a stable snapshot while holding the same per-session lock as {@link #update}.
-     * A save therefore cannot read a section halfway through a concurrent move.
-     */
+    /** Runs an action against one immutable snapshot without holding a map lock. */
     public GameSession withSession(UUID id, Consumer<GameSession> action) {
-        return update(id, session -> {
-            action.accept(session);
-            return session;
-        });
+        GameSession snapshot = sessions.get(id);
+        if (snapshot == null) {
+            throw new GameNotFoundException(String.valueOf(id));
+        }
+        action.accept(snapshot);
+        return snapshot;
     }
 
     public Optional<GameSession> find(UUID id) {

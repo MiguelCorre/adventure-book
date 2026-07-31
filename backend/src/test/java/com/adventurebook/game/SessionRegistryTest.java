@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.Test;
 
@@ -125,7 +124,7 @@ class SessionRegistryTest {
     }
 
     @Test
-    void aMoveWaitsUntilAnAtomicSnapshotActionHasFinished() throws Exception {
+    void aSnapshotActionDoesNotBlockAMove() throws Exception {
         UUID id = UUID.randomUUID();
         registry.put(session(id, "1", 10));
         CountDownLatch snapshotEntered = new CountDownLatch(1);
@@ -147,14 +146,12 @@ class SessionRegistryTest {
                     current -> session(id, "2", current.health())));
 
             try {
-                assertThatThrownBy(() -> move.get(100, TimeUnit.MILLISECONDS))
-                        .isInstanceOf(TimeoutException.class);
+                assertThat(move.get(1, TimeUnit.SECONDS).sectionId()).isEqualTo("2");
             } finally {
                 releaseSnapshot.countDown();
             }
 
             snapshot.get(1, TimeUnit.SECONDS);
-            assertThat(move.get(1, TimeUnit.SECONDS).sectionId()).isEqualTo("2");
         }
     }
 }

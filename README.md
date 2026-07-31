@@ -49,7 +49,7 @@ cd backend && ./mvnw verify
 cd frontend && npm test
 ```
 
-142 backend tests and 65 frontend tests. Both suites run without a database, a browser or a
+143 backend tests and 65 frontend tests. Both suites run without a database, a browser or a
 network connection.
 
 End-to-end, in a real browser (starts both halves of the application itself):
@@ -204,7 +204,8 @@ killed them, which is how the game-over screen can name the blow.
 **Sessions live in memory, saves live in H2.** A session is a browser tab someone has open;
 losing it on restart costs nothing that cannot be rebuilt. Progress worth keeping is what
 saving is for, so it goes to a file-backed database — and survives a restart, which is
-worth checking by hand.
+worth checking by hand. The registry retains at most 1,000 sessions and evicts the oldest
+when full, so abandoned tabs cannot make memory usage grow without limit.
 
 **One save slot per book.** A bookmark, not a history. Saving again overwrites, and the
 card offers a single *Continue* plus a way to discard the slot — the one destructive act

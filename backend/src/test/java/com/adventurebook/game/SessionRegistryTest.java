@@ -62,6 +62,23 @@ class SessionRegistryTest {
     }
 
     @Test
+    void evictsTheOldestSessionWhenCapacityIsReached() {
+        SessionRegistry bounded = new SessionRegistry(2);
+        UUID oldest = UUID.randomUUID();
+        UUID middle = UUID.randomUUID();
+        UUID newest = UUID.randomUUID();
+
+        bounded.put(session(oldest, "1", 10));
+        bounded.put(session(middle, "2", 8));
+        bounded.put(session(newest, "3", 6));
+
+        assertThat(bounded.find(oldest)).isEmpty();
+        assertThat(bounded.find(middle)).isPresent();
+        assertThat(bounded.find(newest)).isPresent();
+        assertThat(bounded.size()).isEqualTo(2);
+    }
+
+    @Test
     void forgetsARemovedSession() {
         UUID id = UUID.randomUUID();
         registry.put(session(id, "1", 10));

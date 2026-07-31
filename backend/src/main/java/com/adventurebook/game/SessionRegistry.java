@@ -1,7 +1,9 @@
 package com.adventurebook.game;
 
+import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
@@ -16,15 +18,43 @@ import com.adventurebook.game.GameExceptions.GameNotFoundException;
  * <p>Deliberately in memory. A session is a transient thing — a browser tab someone has
  * open — and losing it on restart costs the player nothing they cannot rebuild, because
  * durable progress is what "save" is for. Anything worth keeping goes to the database.
+ *
+ * <p>The registry is bounded. When it reaches capacity, creating a game evicts the
+ * oldest session so abandoned browser tabs cannot grow memory use without limit.
  */
 @Component
 public class SessionRegistry {
 
-    private final Map<UUID, GameSession> sessions = new ConcurrentHashMap<>();
+    private static final int DEFAULT_CAPACITY = 1_000;
 
-    public GameSession put(GameSession session) {
-        sessions.put(session.id(), session);
+    private final Map<UUID, GameSession> sessions = new ConcurrentHashMap<>();
+    private final Queue<UUID> insertionOrder = new ArrayDeque<>();
+    private final int capacity;
+
+    public SessionRegistry() {
+        this(DEFAULT_CAPACITY);
+    }
+
+    SessionRegistry(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Session capacity must be greater than zero");
+        }
+        this.capacity = capacity;
+    }
+
+    public synchronized GameSession put(GameSession session) {
+        GameSession previous = sessions.put(session.id(), session);
+        if (previous == null) {
+            insertionOrder.add(session.id());
+            evictExcess();
+        }
         return session;
+    }
+
+    private void evictExcess() {
+        while (sessions.size() > capacity) {
+            sessions.remove(insertionOrder.remove());
+        }
     }
 
     /**
@@ -50,8 +80,10 @@ public class SessionRegistry {
         return Optional.ofNullable(sessions.get(id));
     }
 
-    public void remove(UUID id) {
-        sessions.remove(id);
+    public synchronized void remove(UUID id) {
+        if (sessions.remove(id) != null) {
+            insertionOrder.remove(id);
+        }
     }
 
     public int size() {

@@ -33,7 +33,9 @@ test('explains why each supplied book cannot be finished', async ({ page }) => {
   // The empty file never became a book at all, and says so in a full sentence.
   const dragon = bookCard(page, 'dragon-quest');
   await dragon.getByRole('button', { name: /Show 1 problem/ }).click();
-  await expect(dragon.getByText(/could not be read as an adventure book: file is empty/)).toBeVisible();
+  await expect(
+    dragon.getByText(/could not be read as an adventure book: dragon-quest\.json: file is empty/),
+  ).toBeVisible();
 
   // Both of the pirates' opening choices are broken, for two different reasons.
   const pirates = bookCard(page, 'Pirates of the Jade Sea');

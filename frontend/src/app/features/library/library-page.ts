@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, debounce, of, switchMap, timer } from 'rxjs';
+import { EMPTY, Subject, catchError, debounce, of, switchMap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { BooksApi } from '../../core/books-api';
@@ -73,19 +73,21 @@ export class LibraryPage implements OnInit {
     this.searches
       .pipe(
         debounce((immediate) => (immediate ? of(0) : timer(250))),
-        switchMap(() => this.booksApi.list(this.query(), this.selectedDifficulties())),
+        switchMap(() =>
+          this.booksApi.list(this.query(), this.selectedDifficulties()).pipe(
+            catchError((failure) => {
+              this.error.set(messageOf(failure, 'The library could not be loaded.'));
+              this.settle();
+              return EMPTY;
+            }),
+          ),
+        ),
         takeUntilDestroyed(),
       )
-      .subscribe({
-        next: (books) => {
-          this.books.set(books);
-          this.settle();
-          this.error.set(null);
-        },
-        error: (failure) => {
-          this.error.set(messageOf(failure, 'The library could not be loaded.'));
-          this.settle();
-        },
+      .subscribe((books) => {
+        this.books.set(books);
+        this.settle();
+        this.error.set(null);
       });
   }
 

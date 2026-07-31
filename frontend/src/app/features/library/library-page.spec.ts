@@ -326,6 +326,19 @@ describe('LibraryPage', () => {
     expect(html().querySelector('[role="alert"]')?.textContent).toContain('Could not reach the server');
   });
 
+  it('can load the library again after a request fails', () => {
+    vi.advanceTimersByTime(250);
+    http.expectOne((r) => r.url === '/api/books').error(new ProgressEvent('network'), { status: 0 });
+    fixture.detectChanges();
+
+    html().querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+    http.expectOne((r) => r.url === '/api/books').flush([book()]);
+    fixture.detectChanges();
+
+    expect(html().querySelector('[role="alert"]')).toBeNull();
+    expect(html().textContent).toContain('The Clockwork Lighthouse');
+  });
+
   it('starts a game from the beginning when a quest is begun', () => {
     settle([book()]);
 

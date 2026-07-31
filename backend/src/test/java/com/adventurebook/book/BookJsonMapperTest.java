@@ -178,6 +178,48 @@ class BookJsonMapperTest {
         }
 
         @Test
+        void rejectsAConsequenceWithoutAType() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Missing type", "sections": [
+                      { "id": 1, "text": "Start.", "type": "NODE", "options": [
+                        { "description": "Go", "gotoId": 2,
+                          "consequence": { "value": "1", "text": "Something happens." } }
+                      ] }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("type is required");
+        }
+
+        @Test
+        void rejectsAConsequenceWithNoEffect() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "No effect", "sections": [
+                      { "id": 1, "text": "Start.", "type": "NODE", "options": [
+                        { "description": "Go", "gotoId": 2,
+                          "consequence": { "type": "GAIN_HEALTH", "value": "0", "text": "Nothing happens." } }
+                      ] }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("value must be positive");
+        }
+
+        @Test
+        void rejectsAConsequenceWithoutNarration() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Missing narration", "sections": [
+                      { "id": 1, "text": "Start.", "type": "NODE", "options": [
+                        { "description": "Go", "gotoId": 2,
+                          "consequence": { "type": "LOSE_HEALTH", "value": "1", "text": "   " } }
+                      ] }
+                    ] }
+                    """))
+                    .isInstanceOf(BookParseException.class)
+                    .hasMessageContaining("text is required");
+        }
+
+        @Test
         void rejectsUnknownSectionType() {
             assertThatThrownBy(() -> parse("""
                     { "title": "Odd", "sections": [ { "id": 1, "text": "?", "type": "MIDDLE" } ] }

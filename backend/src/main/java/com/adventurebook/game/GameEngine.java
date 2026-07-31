@@ -92,7 +92,7 @@ public class GameEngine {
 
         Option chosen = options.get(optionIndex);
         Consequence consequence = chosen.consequence();
-        int health = clamp(session.health() + healthDeltaOf(consequence));
+        int health = clamp((long) session.health() + healthDeltaOf(consequence));
 
         if (health == 0) {
             return session.at(current.id(), 0, GameStatus.DEAD, consequence);
@@ -114,7 +114,7 @@ public class GameEngine {
         return section.isEnding() ? GameStatus.WON : GameStatus.IN_PROGRESS;
     }
 
-    private static int healthDeltaOf(Consequence consequence) {
+    private static long healthDeltaOf(Consequence consequence) {
         if (consequence == null) {
             return 0;
         }
@@ -124,7 +124,7 @@ public class GameEngine {
         };
     }
 
-    private int clamp(int health) {
-        return Math.max(0, Math.min(startingHealth, health));
+    private int clamp(long health) {
+        return (int) Math.max(0L, Math.min(startingHealth, health));
     }
 }

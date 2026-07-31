@@ -146,6 +146,21 @@ class GameEngineTest {
         }
 
         @Test
+        void capsHealingBeforeAnIntegerOverflowCanTurnItIntoDamage() {
+            LoadedBook book = playable(Books.of(
+                    Books.begin("1", Books.hurts("Get hurt", "2", 3)),
+                    Books.node("2", Books.heals("Rest well", "3", Integer.MAX_VALUE)),
+                    Books.node("3", Books.goTo("On", "4")),
+                    Books.end("4")));
+
+            GameSession wounded = engine.choose(book, engine.start(book), 0);
+            GameSession healed = engine.choose(book, wounded, 0);
+
+            assertThat(healed.health()).isEqualTo(FULL_HEALTH);
+            assertThat(healed.status()).isEqualTo(GameStatus.IN_PROGRESS);
+        }
+
+        @Test
         void leavesHealthAloneWhenAChoiceHasNoConsequence() {
             LoadedBook book = playable(Books.of(Books.begin("1", Books.goTo("On", "2")), Books.end("2")));
 

@@ -14,8 +14,14 @@ package com.adventurebook.book;
 public record Consequence(ConsequenceType type, int value, String text) {
 
     public Consequence {
-        if (value < 0) {
-            throw new IllegalArgumentException("consequence value must not be negative: " + value);
+        if (type == null) {
+            throw new IllegalArgumentException("consequence type is required");
+        }
+        if (value <= 0) {
+            throw new IllegalArgumentException("consequence value must be positive: " + value);
+        }
+        if (text == null || text.isBlank()) {
+            throw new IllegalArgumentException("consequence text is required");
         }
     }
 }

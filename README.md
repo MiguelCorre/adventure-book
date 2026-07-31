@@ -5,7 +5,7 @@
 An interactive adventure book: pick a story, read a section, choose what happens next, and
 try to reach an ending before your health runs out.
 
-Java 21 / Spring Boot backend, Angular frontend.
+Java 21 / Spring Boot 4.1.0 backend, Angular 22 frontend.
 
 ---
 
@@ -167,6 +167,10 @@ A rejected upload carries the full list of validation issues in an `issues` prop
 ---
 
 ## Decisions
+
+**Framework versions are explicit.** The brief requires Spring Boot and Angular but does
+not pin their releases. This implementation uses Spring Boot 4.1.0 and Angular 22; the
+Maven POM and npm lockfile are the source of truth, and this README mirrors them.
 
 **The game is resolved on the server.** The client is told the section text, the words on
 each button and the player's health — never where a choice leads or what it will cost. A

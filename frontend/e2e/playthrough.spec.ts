@@ -17,6 +17,20 @@ test('the header carries everything the brief asks for', async ({ page }) => {
   await expect(header.getByRole('button', { name: /Save Progress/ })).toBeEnabled();
 });
 
+test('leaving an unfinished adventure requires confirmation across navigation methods', async ({ page }) => {
+  await beginQuest(page, 'The Clockwork Lighthouse');
+  const gameUrl = page.url();
+
+  page.once('dialog', (dialog) => dialog.dismiss());
+  await page.getByRole('button', { name: /Back to Library/ }).click();
+  await expect(page).toHaveURL(gameUrl);
+  await expect(page.locator('.choice')).toHaveCount(2);
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.goBack();
+  await expect(page).toHaveURL('/');
+});
+
 test('a careful route reaches an ending without a scratch', async ({ page }) => {
   await beginQuest(page, 'The Clockwork Lighthouse');
 
@@ -81,6 +95,7 @@ test('saved progress survives and resumes on the same section', async ({ page })
   await page.getByRole('button', { name: /Save Progress/ }).click();
   await expect(page.getByText('Progress saved.')).toBeVisible();
 
+  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: /Back to Library/ }).click();
   const orchard = page.locator('app-book-card').filter({ hasText: 'The Sunken Orchard' });
   await expect(orchard.getByText('Saved', { exact: true })).toBeVisible();
@@ -92,6 +107,7 @@ test('saved progress survives and resumes on the same section', async ({ page })
   await expectHealth(page, '10/10');
 
   // Discarding asks first — a real browser dialog — then the offer to continue is gone.
+  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: /Back to Library/ }).click();
   page.once('dialog', (dialog) => dialog.accept());
   await orchard.getByRole('button', { name: 'Discard saved progress' }).click();
@@ -118,6 +134,7 @@ test('moving through history keeps the url and the screen in agreement', async (
   await expectHealth(page, '10/10');
   await expect(page.locator('.choice')).toHaveCount(2);
 
+  page.once('dialog', (dialog) => dialog.accept());
   await page.goBack();
 
   await expect(page).toHaveURL(finishedGameUrl);

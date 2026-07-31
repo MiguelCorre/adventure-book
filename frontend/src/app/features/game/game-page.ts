@@ -1,6 +1,7 @@
 import { Component, OnDestroy, effect, inject, input } from '@angular/core';
 
 import { GameOver } from './game-over';
+import { GameExitAware } from './game-exit.guard';
 import { GameHeader } from './game-header';
 import { GameStore } from './game-store';
 import { SectionPanel } from './section-view';
@@ -12,7 +13,7 @@ import { SectionPanel } from './section-view';
   templateUrl: './game-page.html',
   styleUrl: './game-page.scss',
 })
-export class GamePage implements OnDestroy {
+export class GamePage implements OnDestroy, GameExitAware {
   /** Bound from the route by withComponentInputBinding(). */
   readonly gameId = input.required<string>();
 
@@ -24,6 +25,18 @@ export class GamePage implements OnDestroy {
     // in history — so ngOnInit would fire for the first game and never again, leaving the
     // address bar and the screen describing two different play-throughs.
     effect(() => this.store.load(this.gameId()));
+  }
+
+  canDeactivate(nextUrl: string): boolean {
+    // Restart already holds the fresh state before navigating to its new UUID. That route
+    // is the state catching up with its own URL, not the reader abandoning progress.
+    if (nextUrl === `/play/${this.store.state()?.gameId}`) {
+      return true;
+    }
+    return (
+      !this.store.inProgress() ||
+      window.confirm('Leave this adventure? Any progress since your last save will be lost.')
+    );
   }
 
   ngOnDestroy(): void {

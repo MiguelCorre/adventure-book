@@ -36,6 +36,7 @@ export class GameStore {
     const status = this._state()?.status;
     return status === 'WON' || status === 'DEAD';
   });
+  readonly inProgress = computed(() => this._state()?.status === 'IN_PROGRESS');
 
   /** Loads a game by its handle, used when the play screen is opened or reloaded. */
   load(gameId: string): void {
@@ -107,7 +108,9 @@ export class GameStore {
   }
 
   leave(): void {
-    this.reset();
+    // GamePage resets only after a successful navigation. Resetting here would erase the
+    // session before CanDeactivate has a chance to ask, and a declined exit could not be
+    // restored.
     void this.router.navigate(['/']);
   }
 

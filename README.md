@@ -49,7 +49,7 @@ cd backend && ./mvnw verify
 cd frontend && npm test
 ```
 
-148 backend tests and 71 frontend tests. Both suites run without a database, a browser or a
+148 backend tests and 75 frontend tests. Both suites run without a database, a browser or a
 network connection.
 
 End-to-end, in a real browser (starts both halves of the application itself):
@@ -58,7 +58,7 @@ End-to-end, in a real browser (starts both halves of the application itself):
 cd frontend && npm run e2e:install && npm run e2e
 ```
 
-14 specs covering the ground the unit suites structurally cannot reach: what is actually
+15 specs covering the ground the unit suites structurally cannot reach: what is actually
 painted, real browser history, and real layout. They found three defects that unit tests
 had no way to see — a duplicated ending passage, choices offered to a dead player, and a
 scroll position that jumped when the result set shrank. The backend runs against an

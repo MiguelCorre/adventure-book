@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GameState } from '../../core/models';
 import { GamePage } from './game-page';
@@ -57,6 +57,8 @@ describe('GamePage', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => vi.unstubAllGlobals());
+
   it('shows the book name and health in the header', () => {
     open(game({ health: 7 }));
 
@@ -64,6 +66,42 @@ describe('GamePage', () => {
     expect(header.textContent).toContain('The Clockwork Lighthouse');
     expect(header.textContent).toContain('7/10');
     expect(header.textContent).toContain('Back to Library');
+  });
+
+  it('keeps an in-progress game when the reader declines to leave', () => {
+    open(game());
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal('confirm', confirm);
+
+    expect(fixture.componentInstance.canDeactivate('/')).toBe(false);
+    expect(confirm).toHaveBeenCalledWith(
+      'Leave this adventure? Any progress since your last save will be lost.',
+    );
+  });
+
+  it('allows an in-progress game to be left after confirmation', () => {
+    open(game());
+    vi.stubGlobal('confirm', vi.fn(() => true));
+
+    expect(fixture.componentInstance.canDeactivate('/')).toBe(true);
+  });
+
+  it('allows a restarted session to navigate to the route matching its new id', () => {
+    open(game());
+    const confirm = vi.fn();
+    vi.stubGlobal('confirm', confirm);
+
+    expect(fixture.componentInstance.canDeactivate('/play/game-1')).toBe(true);
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('leaves a finished game without an unnecessary confirmation', () => {
+    open(game({ status: 'WON', section: { id: '80', text: 'Done.', type: 'END', options: [] } }));
+    const confirm = vi.fn();
+    vi.stubGlobal('confirm', confirm);
+
+    expect(fixture.componentInstance.canDeactivate('/')).toBe(true);
+    expect(confirm).not.toHaveBeenCalled();
   });
 
   it('renders the section text as paragraphs', () => {

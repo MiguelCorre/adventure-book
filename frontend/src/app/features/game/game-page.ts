@@ -1,4 +1,4 @@
-import { Component, OnDestroy, effect, inject, input } from '@angular/core';
+import { Component, OnDestroy, effect, inject, input, untracked } from '@angular/core';
 
 import { GameOver } from './game-over';
 import { GameExitAware } from './game-exit.guard';
@@ -20,11 +20,15 @@ export class GamePage implements OnDestroy, GameExitAware {
   protected readonly store = inject(GameStore);
 
   constructor() {
-    // Loading follows the id rather than happening once on init. The router reuses this
-    // component when only the route parameter changes — pressing Try Again, or going back
-    // in history — so ngOnInit would fire for the first game and never again, leaving the
-    // address bar and the screen describing two different play-throughs.
-    effect(() => this.store.load(this.gameId()));
+    // Loading follows the route id because the router can reuse this component. Restarting
+    // already supplies the new state before navigation, so keep it when the URL catches up.
+    effect(() => {
+      const gameId = this.gameId();
+      const loadedGameId = untracked(() => this.store.state()?.gameId);
+      if (loadedGameId !== gameId) {
+        this.store.load(gameId);
+      }
+    });
   }
 
   canDeactivate(nextUrl: string): boolean {

@@ -256,6 +256,18 @@ describe('GamePage', () => {
     const request = http.expectOne('/api/games');
     expect(request.request.body).toEqual({ bookSlug: 'clockwork-lighthouse', fromSave: false });
     request.flush(game({ gameId: 'game-2' }));
+    fixture.detectChanges();
+
+    // Receiving the fresh state must not make the effect reload the old route's game.
+    http.expectNone('/api/games/game-1');
+
+    fixture.componentRef.setInput('gameId', 'game-2');
+    fixture.detectChanges();
+
+    // Navigation only aligns the URL with the state returned by the restart request.
+    http.expectNone('/api/games/game-2');
+    expect(TestBed.inject(GameStore).state()?.gameId).toBe('game-2');
+    expect(html().querySelector('app-game-over')).toBeNull();
   });
 
   it('cancels a restart when the finished game is left before it completes', () => {

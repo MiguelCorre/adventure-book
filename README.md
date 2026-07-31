@@ -33,7 +33,7 @@ On Windows use `mvnw.cmd spring-boot:run`.
 **Frontend** (http://localhost:4200):
 
 ```bash
-cd frontend && npm install && npm start
+cd frontend && npm ci && npm start
 ```
 
 Then open http://localhost:4200. The dev server proxies `/api` to the backend, so both need

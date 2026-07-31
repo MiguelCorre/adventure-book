@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { GamesApi } from '../../core/games-api';
 import { GameState } from '../../core/models';
@@ -15,6 +16,7 @@ import { messageOf } from '../../core/problem';
 export class GameStore {
   private readonly api = inject(GamesApi);
   private readonly router = inject(Router);
+  private loadSubscription?: Subscription;
 
   private readonly _state = signal<GameState | null>(null);
   private readonly _loading = signal(false);
@@ -35,9 +37,10 @@ export class GameStore {
 
   /** Loads a game by its handle, used when the play screen is opened or reloaded. */
   load(gameId: string): void {
+    this.loadSubscription?.unsubscribe();
     this._loading.set(true);
     this._error.set(null);
-    this.api.get(gameId).subscribe({
+    this.loadSubscription = this.api.get(gameId).subscribe({
       next: (state) => this.settle(state),
       error: (failure) => this.fail(failure, 'This adventure could not be opened.'),
     });
@@ -101,6 +104,8 @@ export class GameStore {
   }
 
   reset(): void {
+    this.loadSubscription?.unsubscribe();
+    this.loadSubscription = undefined;
     this._state.set(null);
     this._loading.set(false);
     this._saving.set(false);

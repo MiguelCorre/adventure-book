@@ -219,6 +219,25 @@ describe('GamePage', () => {
     expect(html().querySelectorAll('.choice').length).toBe(2);
   });
 
+  it('cancels an obsolete load when the route changes before it completes', () => {
+    const obsoleteRequest = http.expectOne('/api/games/game-1');
+
+    fixture.componentRef.setInput('gameId', 'game-2');
+    fixture.detectChanges();
+
+    expect(obsoleteRequest.cancelled).toBe(true);
+    http.expectOne('/api/games/game-2').flush(
+      game({
+        gameId: 'game-2',
+        bookTitle: 'The Second Adventure',
+      }),
+    );
+    fixture.detectChanges();
+
+    expect(html().querySelector('app-game-header')?.textContent).toContain('The Second Adventure');
+    expect(html().querySelectorAll('.choice').length).toBe(2);
+  });
+
   it('reports a game that could not be opened', () => {
     http.expectOne('/api/games/game-1').flush(
       { title: 'Not found', detail: "No game with id 'game-1'" },

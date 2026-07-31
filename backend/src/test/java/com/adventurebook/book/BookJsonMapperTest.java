@@ -196,17 +196,31 @@ class BookJsonMapperTest {
         }
 
         @Test
-        void rejectsAConsequenceWithNoEffect() {
-            assertThatThrownBy(() -> parse("""
+        void acceptsAConsequenceWithZeroEffect() {
+            Book book = parse("""
                     { "title": "No effect", "sections": [
                       { "id": 1, "text": "Start.", "type": "NODE", "options": [
                         { "description": "Go", "gotoId": 2,
                           "consequence": { "type": "GAIN_HEALTH", "value": "0", "text": "Nothing happens." } }
                       ] }
                     ] }
+                    """);
+
+            assertThat(book.sections().getFirst().options().getFirst().consequence().value()).isZero();
+        }
+
+        @Test
+        void rejectsANegativeConsequenceValue() {
+            assertThatThrownBy(() -> parse("""
+                    { "title": "Negative effect", "sections": [
+                      { "id": 1, "text": "Start.", "type": "NODE", "options": [
+                        { "description": "Go", "gotoId": 2,
+                          "consequence": { "type": "GAIN_HEALTH", "value": "-1", "text": "Wrong way." } }
+                      ] }
+                    ] }
                     """))
                     .isInstanceOf(BookParseException.class)
-                    .hasMessageContaining("value must be positive");
+                    .hasMessageContaining("value cannot be negative");
         }
 
         @Test

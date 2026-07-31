@@ -8,7 +8,7 @@ package com.adventurebook.book;
  * book unreadable, which surfaces as a parse error rather than a crash.
  *
  * @param type  whether health is lost or gained
- * @param value magnitude of the effect, always positive
+ * @param value magnitude of the effect, never negative
  * @param text  narration shown to the player when the effect is applied
  */
 public record Consequence(ConsequenceType type, int value, String text) {
@@ -17,8 +17,8 @@ public record Consequence(ConsequenceType type, int value, String text) {
         if (type == null) {
             throw new IllegalArgumentException("consequence type is required");
         }
-        if (value <= 0) {
-            throw new IllegalArgumentException("consequence value must be positive: " + value);
+        if (value < 0) {
+            throw new IllegalArgumentException("consequence value cannot be negative: " + value);
         }
         if (text == null || text.isBlank()) {
             throw new IllegalArgumentException("consequence text is required");

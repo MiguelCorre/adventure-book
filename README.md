@@ -84,7 +84,7 @@ cd frontend
 npm test
 ```
 
-149 backend tests and 75 frontend tests. Once dependencies are installed, both suites run
+150 backend tests and 75 frontend tests. Once dependencies are installed, both suites run
 without an external database, a browser or a network connection; backend persistence tests
 use embedded H2.
 

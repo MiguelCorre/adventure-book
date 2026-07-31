@@ -219,6 +219,30 @@ describe('GamePage', () => {
     expect(html().querySelectorAll('.choice').length).toBe(2);
   });
 
+  it('does not leave the previous game playable when the next route id cannot be loaded', () => {
+    open(game({ bookTitle: 'The First Adventure' }));
+
+    fixture.componentRef.setInput('gameId', 'missing-game');
+    fixture.detectChanges();
+
+    // The new URL owns the screen immediately; the previous game's controls must not
+    // remain usable while its replacement is being fetched.
+    expect(html().querySelector('app-game-header')).toBeNull();
+    expect(html().querySelectorAll('.choice').length).toBe(0);
+
+    http.expectOne('/api/games/missing-game').flush(
+      { title: 'Not found', detail: "No game with id 'missing-game'" },
+      { status: 404, statusText: 'Not Found' },
+    );
+    fixture.detectChanges();
+
+    expect(html().textContent).not.toContain('The First Adventure');
+    expect(html().querySelectorAll('.choice').length).toBe(0);
+    expect(html().querySelector('[role="alert"]')?.textContent).toContain(
+      "No game with id 'missing-game'",
+    );
+  });
+
   it('cancels an obsolete load when the route changes before it completes', () => {
     const obsoleteRequest = http.expectOne('/api/games/game-1');
 

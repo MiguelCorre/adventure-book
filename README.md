@@ -49,7 +49,7 @@ cd backend && ./mvnw verify
 cd frontend && npm test
 ```
 
-143 backend tests and 65 frontend tests. Both suites run without a database, a browser or a
+143 backend tests and 66 frontend tests. Both suites run without a database, a browser or a
 network connection.
 
 End-to-end, in a real browser (starts both halves of the application itself):

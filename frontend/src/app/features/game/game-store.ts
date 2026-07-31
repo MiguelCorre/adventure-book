@@ -38,8 +38,13 @@ export class GameStore {
   /** Loads a game by its handle, used when the play screen is opened or reloaded. */
   load(gameId: string): void {
     this.loadSubscription?.unsubscribe();
+    // A route id owns the whole screen. Keeping the previous game visible while the new
+    // request is in flight is misleading, and keeping it after a failed request would let
+    // the player make choices in a game that no longer matches the address bar.
+    this._state.set(null);
     this._loading.set(true);
     this._error.set(null);
+    this._notice.set(null);
     this.loadSubscription = this.api.get(gameId).subscribe({
       next: (state) => this.settle(state),
       error: (failure) => this.fail(failure, 'This adventure could not be opened.'),

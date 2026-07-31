@@ -1,6 +1,7 @@
 package com.adventurebook.save;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,13 +48,10 @@ public class SaveService {
             throw new GameFinishedException(session.status());
         }
 
-        return saves.findById(session.bookSlug())
-                .map(existing -> {
-                    existing.update(session.sectionId(), session.health(), clock.instant());
-                    return existing;
-                })
-                .orElseGet(() -> saves.save(new GameSave(session.bookSlug(), session.sectionId(),
-                        session.health(), clock.instant())));
+        Instant savedAt = clock.instant();
+        saves.upsert(session.bookSlug(), session.sectionId(), session.health(), savedAt);
+        return saves.findById(session.bookSlug()).orElseThrow(() -> new IllegalStateException(
+                "Save for book '%s' disappeared after it was written".formatted(session.bookSlug())));
     }
 
     @Transactional(readOnly = true)

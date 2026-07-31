@@ -49,7 +49,7 @@ cd backend && ./mvnw verify
 cd frontend && npm test
 ```
 
-147 backend tests and 71 frontend tests. Both suites run without a database, a browser or a
+148 backend tests and 71 frontend tests. Both suites run without a database, a browser or a
 network connection.
 
 End-to-end, in a real browser (starts both halves of the application itself):
@@ -209,7 +209,9 @@ when full, so abandoned tabs cannot make memory usage grow without limit.
 
 **One save slot per book.** A bookmark, not a history. Saving again overwrites, and the
 card offers a single *Continue* plus a way to discard the slot — the one destructive act
-in the interface, and the only one that asks for confirmation first.
+in the interface, and the only one that asks for confirmation first. H2's atomic `MERGE`
+writes the slot in one statement, so simultaneous first saves cannot race through a
+check-then-insert and turn one valid request into a primary-key error.
 
 **An uploaded file never names itself on disk.** The stored filename is derived from the
 book's own title through an allow-list of characters. A client-supplied filename is

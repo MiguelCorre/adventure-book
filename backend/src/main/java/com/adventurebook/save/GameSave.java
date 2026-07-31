@@ -60,10 +60,4 @@ public class GameSave {
     public Instant getSavedAt() {
         return savedAt;
     }
-
-    void update(String sectionId, int health, Instant savedAt) {
-        this.sectionId = sectionId;
-        this.health = health;
-        this.savedAt = savedAt;
-    }
 }

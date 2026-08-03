@@ -1,14 +1,23 @@
 import { expect, test } from '@playwright/test';
 
-import { bookCard } from './support';
+import { bookCard, captureBrowserErrors, expectNoHorizontalOverflow } from './support';
 
-const SUPPLIED_BOOKS = ['The Crystal Caverns', 'dragon-quest', 'Pirates of the Jade Sea', 'The Prisoner'];
+const SUPPLIED_BOOKS = [
+  'The Crystal Caverns',
+  'dragon-quest',
+  'Pirates of the Jade Sea',
+  'The Prisoner',
+];
 const OUR_BOOKS = ['The Clockwork Lighthouse', 'The Sunken Orchard'];
+let browserErrors: string[];
 
 test.beforeEach(async ({ page }) => {
+  browserErrors = captureBrowserErrors(page);
   await page.goto('/');
   await expect(page.locator('app-book-card').first()).toBeVisible();
 });
+
+test.afterEach(() => expect(browserErrors).toEqual([]));
 
 test('lists every book, and only the two we wrote can be played', async ({ page }) => {
   await expect(page.locator('app-book-card')).toHaveCount(6);
@@ -23,6 +32,23 @@ test('lists every book, and only the two we wrote can be played', async ({ page 
     await expect(card.getByText('Unplayable')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Begin Quest' })).toBeDisabled();
   }
+});
+
+test('shows optional synopses and themes without empty placeholders', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+
+  const lighthouse = bookCard(page, 'The Clockwork Lighthouse');
+  await expect(lighthouse.locator('.card__description')).toContainText(
+    'ship drifting towards the rocks',
+  );
+  await expect(lighthouse.locator('.card__tag')).toHaveText(['Steampunk', 'Mystery', 'Coastal']);
+
+  const prisoner = bookCard(page, 'The Prisoner');
+  await expect(prisoner.locator('.card__description')).toHaveCount(0);
+  await expect(prisoner.locator('.card__tags')).toHaveCount(0);
+  await expect(prisoner.getByText('Unplayable')).toBeVisible();
+
+  await expectNoHorizontalOverflow(page);
 });
 
 test('explains why each supplied book cannot be finished', async ({ page }) => {
@@ -92,27 +118,29 @@ test('keeps the previous results on screen while the next set is fetched', async
  * current offset. The unit test for this can only assert that a stubbed geometry API was
  * called; here the real jump either happens or it does not.
  */
-test('does not let the page jump when filtering from the bottom', async ({ page }) => {
-  // Tall enough that the filters are still on screen at the foot of the page, which is the
-  // only way a reader can press one from down there — and exactly the case that jumped.
+test('does not let the page jump when filtering while the page is scrolled', async ({ page }) => {
+  // Keep the filters visible on a genuinely scrolled page without coupling the scenario
+  // to the current card height.
   await page.setViewportSize({ width: 900, height: 1000 });
   await expect(page.locator('app-book-card')).toHaveCount(6);
 
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const medium = page.getByRole('button', { name: 'MEDIUM', exact: true });
+  await medium.evaluate((element) => element.scrollIntoView({ block: 'start' }));
   const before = await page.evaluate(() => ({
     scrollY: Math.round(window.scrollY),
     documentHeight: document.documentElement.scrollHeight,
   }));
   expect(before.scrollY, 'the page must actually be scrolled').toBeGreaterThan(100);
-  // If Playwright had to scroll the chip into view, the scenario would be a different one.
-  await expect(page.getByRole('button', { name: 'MEDIUM', exact: true })).toBeInViewport();
+  await expect(medium).toBeInViewport();
 
-  await page.getByRole('button', { name: 'MEDIUM', exact: true }).click();
+  await medium.click();
   await expect(page.locator('app-book-card')).toHaveCount(2);
   await expect(page.locator('.library__results--refreshing')).toHaveCount(0);
   // Wait for the scroll to come to rest and the frozen height to be released.
   await page.waitForFunction(() => window.scrollY === 0);
-  await page.waitForFunction(() => !document.querySelector<HTMLElement>('.library__results')!.style.minHeight);
+  await page.waitForFunction(
+    () => !document.querySelector<HTMLElement>('.library__results')!.style.minHeight,
+  );
 
   const after = await page.evaluate(() => ({
     scrollY: Math.round(window.scrollY),
@@ -137,7 +165,9 @@ test('leaves a reader who is already at the top exactly where they are', async (
 
   expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
   // Nothing was frozen, because there was no jump to prevent.
-  expect(await page.evaluate(
-    () => document.querySelector<HTMLElement>('.library__results')!.style.minHeight,
-  )).toBe('');
+  expect(
+    await page.evaluate(
+      () => document.querySelector<HTMLElement>('.library__results')!.style.minHeight,
+    ),
+  ).toBe('');
 });

@@ -1,16 +1,29 @@
 import { expect, test } from '@playwright/test';
 
+import { captureBrowserErrors } from './support';
+
 const BROKEN_BOOK = JSON.stringify({
   title: 'A Book That Cannot Be Finished',
   author: 'E. Tester',
   difficulty: 'EASY',
   sections: [
-    { id: 1, text: 'You set out.', type: 'BEGIN', options: [{ description: 'Head nowhere', gotoId: 999 }] },
+    {
+      id: 1,
+      text: 'You set out.',
+      type: 'BEGIN',
+      options: [{ description: 'Head nowhere', gotoId: 999 }],
+    },
     { id: 666, text: 'A room with no doors.', type: 'NODE' },
   ],
 });
+const EXPECTED_REJECTION_DIAGNOSTIC = [
+  'console: Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)',
+];
+
+let browserErrors: string[];
 
 test.beforeEach(async ({ page }) => {
+  browserErrors = captureBrowserErrors(page);
   await page.goto('/');
   await expect(page.locator('app-book-card').first()).toBeVisible();
   await page.getByRole('button', { name: '+ Add a book' }).click();
@@ -42,6 +55,7 @@ test('a rejected book lists every problem at once and is not added', async ({ pa
   await expect(page.locator('.upload__panel')).toBeVisible();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.locator('app-book-card')).toHaveCount(booksBefore);
+  expect(browserErrors).toEqual(EXPECTED_REJECTION_DIAGNOSTIC);
 });
 
 test('a file that is not a book at all is refused politely', async ({ page }) => {
@@ -52,11 +66,13 @@ test('a file that is not a book at all is refused politely', async ({ page }) =>
   // The parser's own wording is not asserted, only that the reader is told the file could
   // not be read at all rather than which rule it broke.
   await expect(page.getByRole('alert')).toContainText('could not be read as an adventure book');
+  expect(browserErrors).toEqual(EXPECTED_REJECTION_DIAGNOSTIC);
 });
 
 test('an accepted book is published immediately and can be played', async ({ page }, testInfo) => {
   // A retry gets a fresh slug in case the first attempt reached the server before failing.
-  const title = testInfo.retry === 0 ? 'The Brass Meridian' : `The Brass Meridian ${testInfo.retry}`;
+  const title =
+    testInfo.retry === 0 ? 'The Brass Meridian' : `The Brass Meridian ${testInfo.retry}`;
   const validBook = JSON.stringify({
     title,
     author: 'Mara Vale',
@@ -89,4 +105,5 @@ test('an accepted book is published immediately and can be played', async ({ pag
   await card.getByRole('button', { name: 'Begin Quest' }).click();
   await expect(page).toHaveURL(/\/play\//);
   await expect(page.getByText('A brass compass draws a line across the empty dawn.')).toBeVisible();
+  expect(browserErrors).toEqual([]);
 });

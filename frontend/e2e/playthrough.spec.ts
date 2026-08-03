@@ -1,11 +1,23 @@
 import { expect, test } from '@playwright/test';
 
-import { beginQuest, choose, expectHealth } from './support';
+import {
+  beginQuest,
+  bookCard,
+  captureBrowserErrors,
+  choose,
+  expectHealth,
+  expectNoHorizontalOverflow,
+} from './support';
+
+let browserErrors: string[];
 
 test.beforeEach(async ({ page }) => {
+  browserErrors = captureBrowserErrors(page);
   await page.goto('/');
   await expect(page.locator('app-book-card').first()).toBeVisible();
 });
+
+test.afterEach(() => expect(browserErrors).toEqual([]));
 
 test('the header carries everything the brief asks for', async ({ page }) => {
   await beginQuest(page, 'The Clockwork Lighthouse');
@@ -14,10 +26,53 @@ test('the header carries everything the brief asks for', async ({ page }) => {
   await expect(header.getByRole('button', { name: /Back to Library/ })).toBeVisible();
   await expect(header.getByRole('heading', { name: 'The Clockwork Lighthouse' })).toBeVisible();
   await expect(header.getByText('10/10')).toBeVisible();
+  await expect(header.getByRole('button', { name: 'Pause' })).toBeEnabled();
   await expect(header.getByRole('button', { name: /Save Progress/ })).toBeEnabled();
 });
 
-test('leaving an unfinished adventure requires confirmation across navigation methods', async ({ page }) => {
+test('shows the current section heading without overflowing a narrow screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await beginQuest(page, 'The Clockwork Lighthouse');
+
+  await expect(page.getByRole('heading', { name: 'The Dark Beacon', level: 2 })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
+test('pause saves and returns without a dialog, then continue restores the exact position', async ({
+  page,
+}) => {
+  await beginQuest(page, 'The Clockwork Lighthouse');
+  await choose(page, 'Force the seaward door');
+  await expectHealth(page, '6/10');
+  await expect(
+    page.locator('.section__text').filter({ hasText: /machine room smells of brine/ }),
+  ).toHaveCount(1);
+
+  let dialogOpened = false;
+  page.on('dialog', async (dialog) => {
+    dialogOpened = true;
+    await dialog.dismiss();
+  });
+  await page.getByRole('button', { name: 'Pause' }).click();
+
+  await expect(page).toHaveURL('/');
+  expect(dialogOpened).toBe(false);
+  const lighthouse = bookCard(page, 'The Clockwork Lighthouse');
+  await expect(lighthouse.getByText('Saved', { exact: true })).toBeVisible();
+
+  await lighthouse.getByRole('button', { name: 'Continue' }).click();
+  await expect(
+    page.locator('.section__text').filter({ hasText: /machine room smells of brine/ }),
+  ).toHaveCount(1);
+  await expectHealth(page, '6/10');
+
+  const cleanup = await page.request.delete('/api/books/clockwork-lighthouse/save');
+  expect(cleanup.ok()).toBe(true);
+});
+
+test('leaving an unfinished adventure requires confirmation across navigation methods', async ({
+  page,
+}) => {
   await beginQuest(page, 'The Clockwork Lighthouse');
   const gameUrl = page.url();
 
@@ -40,7 +95,9 @@ test('a careful route reaches an ending without a scratch', async ({ page }) => 
   await choose(page, 'Fetch the crank handle');
 
   await expect(page.getByText('Your adventure is complete')).toBeVisible();
-  await expect(page.locator('.section__text').filter({ hasText: /the lens begins to turn/ })).toHaveCount(1);
+  await expect(
+    page.locator('.section__text').filter({ hasText: /the lens begins to turn/ }),
+  ).toHaveCount(1);
   await expectHealth(page, '10/10');
   await expect(page.locator('.choice')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Play Again' })).toBeVisible();
@@ -89,7 +146,9 @@ test('saved progress survives and resumes on the same section', async ({ page })
   await choose(page, 'Row out to the nearest treetop');
   // Waited for rather than captured: reading the text straight after the click raced the
   // render and silently compared the opening section against itself.
-  const savedSection = page.locator('.section__text').filter({ hasText: /trees are not dead so much as sleeping/ });
+  const savedSection = page
+    .locator('.section__text')
+    .filter({ hasText: /trees are not dead so much as sleeping/ });
   await expect(savedSection).toHaveCount(1);
 
   await page.getByRole('button', { name: /Save Progress/ }).click();
@@ -102,8 +161,9 @@ test('saved progress survives and resumes on the same section', async ({ page })
 
   await orchard.getByRole('button', { name: 'Continue' }).click();
 
-  await expect(page.locator('.section__text').filter({ hasText: /trees are not dead so much as sleeping/ }))
-    .toHaveCount(1);
+  await expect(
+    page.locator('.section__text').filter({ hasText: /trees are not dead so much as sleeping/ }),
+  ).toHaveCount(1);
   await expectHealth(page, '10/10');
 
   // Discarding asks first — a real browser dialog — then the offer to continue is gone.

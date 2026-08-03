@@ -1,5 +1,17 @@
 import { Locator, Page, expect } from '@playwright/test';
 
+/** Captures browser-level failures so every scenario can assert a clean console. */
+export function captureBrowserErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      errors.push(`console: ${message.text()}`);
+    }
+  });
+  page.on('pageerror', (error) => errors.push(`page: ${error.message}`));
+  return errors;
+}
+
 /** The card for a given book title. */
 export function bookCard(page: Page, title: string): Locator {
   return page.locator('app-book-card').filter({ hasText: title });
@@ -30,4 +42,13 @@ export function health(page: Page): Locator {
 
 export async function expectHealth(page: Page, value: string): Promise<void> {
   await expect(health(page)).toHaveText(value);
+}
+
+/** Proves the rendered document fits the viewport rather than hiding horizontal overflow. */
+export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
+  const dimensions = await page.evaluate(() => ({
+    content: document.documentElement.scrollWidth,
+    viewport: document.documentElement.clientWidth,
+  }));
+  expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
 }

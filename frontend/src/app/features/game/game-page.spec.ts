@@ -18,6 +18,7 @@ function game(overrides: Partial<GameState> = {}): GameState {
     status: 'IN_PROGRESS',
     section: {
       id: '1',
+      title: 'The Dark Beacon',
       text: 'The keeper is gone.\n\nThe lamp is dark.',
       type: 'BEGIN',
       options: [
@@ -68,6 +69,21 @@ describe('GamePage', () => {
     expect(header.textContent).toContain('Back to Library');
   });
 
+  it('renders the current section title exactly once', () => {
+    open(game());
+
+    const headings = html().querySelectorAll('.section__title');
+    expect(headings.length).toBe(1);
+    expect(headings[0].textContent).toContain('The Dark Beacon');
+  });
+
+  it('does not render an empty section heading when no title was provided', () => {
+    open(game({ section: { ...game().section, title: null } }));
+
+    expect(html().querySelector('.section__title')).toBeNull();
+    expect(html().querySelector('.choices__title')?.tagName).toBe('H2');
+  });
+
   it('keeps an in-progress game when the reader declines to leave', () => {
     open(game());
     const confirm = vi.fn(() => false);
@@ -96,7 +112,10 @@ describe('GamePage', () => {
   });
 
   it('leaves a finished game without an unnecessary confirmation', () => {
-    open(game({ status: 'WON', section: { id: '80', text: 'Done.', type: 'END', options: [] } }));
+    open(game({
+      status: 'WON',
+      section: { id: '80', title: null, text: 'Done.', type: 'END', options: [] },
+    }));
     const confirm = vi.fn();
     vi.stubGlobal('confirm', confirm);
 
@@ -213,7 +232,13 @@ describe('GamePage', () => {
   it('celebrates a win and offers to play again', () => {
     open(game({
       status: 'WON',
-      section: { id: '80', text: 'The lens begins to turn.', type: 'END', options: [] },
+      section: {
+        id: '80',
+        title: 'The Returning Light',
+        text: 'The lens begins to turn.',
+        type: 'END',
+        options: [],
+      },
     }));
 
     const ending = html().querySelector('app-game-over')!;
@@ -243,7 +268,10 @@ describe('GamePage', () => {
   });
 
   it('hides the save button once the adventure is over', () => {
-    open(game({ status: 'WON', section: { id: '80', text: 'Done.', type: 'END', options: [] } }));
+    open(game({
+      status: 'WON',
+      section: { id: '80', title: null, text: 'Done.', type: 'END', options: [] },
+    }));
 
     expect(html().querySelector<HTMLButtonElement>('.game-header__save')!.disabled).toBe(true);
   });
@@ -282,7 +310,10 @@ describe('GamePage', () => {
   });
 
   it('ignores further choices once the adventure is over', () => {
-    open(game({ status: 'WON', section: { id: '80', text: 'Done.', type: 'END', options: [] } }));
+    open(game({
+      status: 'WON',
+      section: { id: '80', title: null, text: 'Done.', type: 'END', options: [] },
+    }));
 
     // No choices are rendered, and the store refuses one even if it were requested.
     expect(html().querySelectorAll('.choice').length).toBe(0);

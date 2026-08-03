@@ -39,6 +39,7 @@ export interface OptionView {
 
 export interface SectionView {
   readonly id: string;
+  readonly title: string | null;
   readonly text: string;
   readonly type: SectionType;
   readonly options: readonly OptionView[];

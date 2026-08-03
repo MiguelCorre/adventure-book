@@ -26,6 +26,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.section__title {
+  margin: 0 0 1.25rem;
+  color: var(--ink-strong);
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  text-align: center;
+}
+
 .section__text {
   margin: 0 0 1rem;
   font-size: 1.02rem;

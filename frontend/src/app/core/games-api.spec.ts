@@ -12,7 +12,13 @@ const A_GAME: GameState = {
   health: 10,
   maxHealth: 10,
   status: 'IN_PROGRESS',
-  section: { id: '1', text: 'You arrive.', type: 'BEGIN', options: [{ index: 0, description: 'Go' }] },
+  section: {
+    id: '1',
+    title: null,
+    text: 'You arrive.',
+    type: 'BEGIN',
+    options: [{ index: 0, description: 'Go' }],
+  },
   lastConsequence: null,
 };
 

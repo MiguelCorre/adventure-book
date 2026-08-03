@@ -13,6 +13,9 @@
 }
 
 <article class="section">
+  @if (section().title) {
+    <h2 class="section__title">{{ section().title }}</h2>
+  }
   @for (paragraph of paragraphs(section().text); track $index) {
     <p class="section__text">{{ paragraph }}</p>
   }

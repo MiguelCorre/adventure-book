@@ -1,5 +1,6 @@
 package com.adventurebook.book;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -39,11 +40,29 @@ public record LoadedBook(String slug, Book book, ValidationReport report) {
         return book == null ? null : book.author();
     }
 
+    public String description() {
+        return book == null ? null : book.description();
+    }
+
+    public List<String> tags() {
+        return book == null ? List.of() : book.tags();
+    }
+
     public Difficulty difficulty() {
         return book == null ? null : book.difficulty();
     }
 
     public int sectionCount() {
         return book == null ? 0 : book.sections().size();
+    }
+
+    /** Counts the prose the player reads; option labels and metadata are excluded. */
+    public int wordCount() {
+        if (book == null) {
+            return 0;
+        }
+        return book.sections().stream()
+                .mapToInt(section -> section.text().trim().split("\\s+").length)
+                .sum();
     }
 }

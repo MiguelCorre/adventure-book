@@ -14,13 +14,22 @@ import java.util.Optional;
  *
  * @param title      display title
  * @param author     credited author, may be {@code null}
+ * @param description short synopsis, may be {@code null}
+ * @param tags       presentation labels; never {@code null}
  * @param difficulty advertised difficulty, may be {@code null}
  * @param sections   sections in file order; never {@code null}
  */
-public record Book(String title, String author, Difficulty difficulty, List<Section> sections) {
+public record Book(String title, String author, String description, List<String> tags,
+        Difficulty difficulty, List<Section> sections) {
 
     public Book {
+        tags = tags == null ? List.of() : List.copyOf(tags);
         sections = sections == null ? List.of() : List.copyOf(sections);
+    }
+
+    /** Keeps programmatic fixtures concise when presentation metadata is irrelevant. */
+    public Book(String title, String author, Difficulty difficulty, List<Section> sections) {
+        this(title, author, null, List.of(), difficulty, sections);
     }
 
     /**

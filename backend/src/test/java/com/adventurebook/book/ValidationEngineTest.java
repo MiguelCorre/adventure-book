@@ -33,6 +33,26 @@ class ValidationEngineTest {
         }
 
         @Test
+        void ignoresOptionalPresentationMetadata() {
+            Book withoutMetadata = Books.of(
+                    Books.begin("1", Books.goTo("Escape", "2")),
+                    Books.end("2"));
+            Book withMetadata = new Book(
+                    withoutMetadata.title(),
+                    withoutMetadata.author(),
+                    "A short escape story.",
+                    List.of("Escape"),
+                    withoutMetadata.difficulty(),
+                    List.of(
+                            new Section("1", "The Cell", "Section 1", SectionType.BEGIN,
+                                    List.of(Books.goTo("Escape", "2"))),
+                            new Section("2", "Outside", "Section 2", SectionType.END, List.of())));
+
+            assertThat(engine.validate(withMetadata)).isEqualTo(engine.validate(withoutMetadata));
+            assertThat(engine.validate(withMetadata).isValid()).isTrue();
+        }
+
+        @Test
         void allowsSeveralEndings() {
             Book book = Books.of(
                     Books.begin("1", Books.goTo("Left", "2"), Books.goTo("Right", "3")),

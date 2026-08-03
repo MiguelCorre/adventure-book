@@ -113,27 +113,32 @@ Books are JSON files in [`books/`](books/). The directory is configurable via
 
 ```json
 {
-  "title": "The Prisoner",
-  "author": "Daniel El Fuego",
-  "difficulty": "HARD",
+  "title": "The Brass Key",
+  "author": "Example Author",
+  "description": "A short escape through a silent observatory.",
+  "tags": ["Mystery", "Short"],
+  "difficulty": "EASY",
   "sections": [
     {
       "id": 1,
-      "text": "You wake up in what seems to be a dark prison cell.",
+      "title": "The Locked Dome",
+      "text": "The observatory door clicks shut behind you.",
       "type": "BEGIN",
       "options": [
-        { "description": "You try to open the door", "gotoId": 500 },
-        {
-          "description": "You look under the bed",
-          "gotoId": 20,
-          "consequence": { "type": "LOSE_HEALTH", "value": "6", "text": "You cut yourself on a rusty nail." }
-        }
+        { "description": "Try the brass key", "gotoId": 2 }
       ]
     },
-    { "id": "500", "text": "The door is locked.", "type": "END" }
+    { "id": 2, "title": "Under Open Sky", "text": "The key turns.", "type": "END" }
   ]
 }
 ```
+
+`description`, `tags` and each section's `title` are optional presentation metadata. Books
+without them remain valid and render without empty placeholders; none of these fields changes
+the story graph or its validation result. Reading time is derived from section prose at 200
+words per minute (rounded up), so authors do not maintain duplicate metadata. Unknown extra
+properties are also ignored so the loader can accept richer book files without weakening the
+structural rules below.
 
 A book is **invalid**, and cannot be played, if any of these hold:
 

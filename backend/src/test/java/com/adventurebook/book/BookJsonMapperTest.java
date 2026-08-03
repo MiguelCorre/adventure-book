@@ -31,9 +31,11 @@ class BookJsonMapperTest {
                     {
                       "title": "The Prisoner",
                       "author": "Daniel El Fuego",
+                      "description": "Escape before the guards return.",
+                      "tags": ["Prison", "Escape"],
                       "difficulty": "HARD",
                       "sections": [
-                        { "id": 1, "text": "You wake up.", "type": "BEGIN",
+                        { "id": 1, "title": "The Cell", "text": "You wake up.", "type": "BEGIN",
                           "options": [ { "description": "Open the door", "gotoId": 2 } ] },
                         { "id": 2, "text": "You are free.", "type": "END" }
                       ]
@@ -42,8 +44,11 @@ class BookJsonMapperTest {
 
             assertThat(book.title()).isEqualTo("The Prisoner");
             assertThat(book.author()).isEqualTo("Daniel El Fuego");
+            assertThat(book.description()).isEqualTo("Escape before the guards return.");
+            assertThat(book.tags()).containsExactly("Prison", "Escape");
             assertThat(book.difficulty()).isEqualTo(Difficulty.HARD);
             assertThat(book.sections()).hasSize(2);
+            assertThat(book.sections().getFirst().title()).isEqualTo("The Cell");
             assertThat(book.sections().getFirst().type()).isEqualTo(SectionType.BEGIN);
             assertThat(book.sections().getLast().isEnding()).isTrue();
         }
@@ -88,7 +93,10 @@ class BookJsonMapperTest {
                     """);
 
             assertThat(book.author()).isNull();
+            assertThat(book.description()).isNull();
+            assertThat(book.tags()).isEmpty();
             assertThat(book.difficulty()).isNull();
+            assertThat(book.sections().getFirst().title()).isNull();
             assertThat(book.sections().getFirst().options()).isEmpty();
             assertThat(book.sections().getFirst().hasOptions()).isFalse();
         }

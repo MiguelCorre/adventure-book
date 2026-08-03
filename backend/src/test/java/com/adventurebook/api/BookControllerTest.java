@@ -74,8 +74,34 @@ class BookControllerTest {
                 .andExpect(jsonPath("$[0].title").value("The Crystal Caverns"))
                 .andExpect(jsonPath("$[0].difficulty").value("EASY"))
                 .andExpect(jsonPath("$[0].sectionCount").value(2))
+                .andExpect(jsonPath("$[0].readingMinutes").value(1))
                 .andExpect(jsonPath("$[0].valid").value(true))
                 .andExpect(jsonPath("$[0].issues").isEmpty());
+    }
+
+    @Test
+    void exposesOptionalPresentationMetadataWithoutExposingSections() throws Exception {
+        Book book = new Book(
+                "The Clockwork Lighthouse",
+                "Ines Vaz-Corvo",
+                "Relight the beacon before a ship reaches the rocks.",
+                List.of("Steampunk", "Coastal"),
+                Difficulty.MEDIUM,
+                List.of(
+                        new com.adventurebook.book.Section("1", "The Dark Tower", "Begin.",
+                                com.adventurebook.book.SectionType.BEGIN, List.of(Books.goTo("Climb", "2"))),
+                        new com.adventurebook.book.Section("2", "The Beacon", "Safe.",
+                                com.adventurebook.book.SectionType.END, List.of())));
+        given(bookService.search(any(), any()))
+                .willReturn(List.of(new LoadedBook("clockwork-lighthouse", book, ValidationReport.valid())));
+
+        mockMvc.perform(get("/api/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].description")
+                        .value("Relight the beacon before a ship reaches the rocks."))
+                .andExpect(jsonPath("$[0].tags[0]").value("Steampunk"))
+                .andExpect(jsonPath("$[0].tags[1]").value("Coastal"))
+                .andExpect(jsonPath("$[0].sections").doesNotExist());
     }
 
     @Test

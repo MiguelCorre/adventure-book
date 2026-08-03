@@ -38,8 +38,10 @@ class BookUploadTest {
     private static final Path UPLOAD_DIR = Path.of("target/upload-test-books");
 
     private static final String VALID_BOOK = """
-            { "title": "The Glass Orchard", "author": "A. Curator", "difficulty": "EASY", "sections": [
-              { "id": 1, "text": "You arrive.", "type": "BEGIN",
+            { "title": "The Glass Orchard", "author": "A. Curator",
+              "description": "A path through a garden of glass.", "tags": ["Fantasy", "Short"],
+              "difficulty": "EASY", "sections": [
+              { "id": 1, "title": "At the Gate", "text": "You arrive.", "type": "BEGIN",
                 "options": [ { "description": "Go in", "gotoId": 2 } ] },
               { "id": 2, "text": "You leave.", "type": "END" } ] }
             """;
@@ -98,6 +100,8 @@ class BookUploadTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.slug").value("the-glass-orchard"))
                 .andExpect(jsonPath("$.title").value("The Glass Orchard"))
+                .andExpect(jsonPath("$.description").value("A path through a garden of glass."))
+                .andExpect(jsonPath("$.tags[0]").value("Fantasy"))
                 .andExpect(jsonPath("$.valid").value(true))
                 .andExpect(jsonPath("$.sectionCount").value(2));
 
@@ -173,6 +177,7 @@ class BookUploadTest {
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("{\"bookSlug\":\"the-glass-orchard\"}"))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.section.title").value("At the Gate"))
                 .andExpect(jsonPath("$.section.text").value("You arrive."));
     }
 }

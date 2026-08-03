@@ -21,7 +21,7 @@ public record GameState(UUID gameId, String bookSlug, String bookTitle, int heal
         GameStatus status, SectionView section, ConsequenceView lastConsequence) {
 
     /** @param options choices in presentation order; the index is what the client sends back */
-    public record SectionView(String id, String text, SectionType type, List<OptionView> options) {
+    public record SectionView(String id, String title, String text, SectionType type, List<OptionView> options) {
     }
 
     public record OptionView(int index, String description) {
@@ -42,7 +42,7 @@ public record GameState(UUID gameId, String bookSlug, String bookTitle, int heal
                 session.health(),
                 maxHealth,
                 session.status(),
-                new SectionView(section.id(), section.text(), section.type(), options),
+                new SectionView(section.id(), section.title(), section.text(), section.type(), options),
                 consequenceView(session.lastConsequence()));
     }
 

@@ -6,6 +6,8 @@ skills/
 .specs/
 .notebook/
 CLAUDE.md
+AGENTS.md
+skills-lock.json
 .claude/
 
 # Java / Maven

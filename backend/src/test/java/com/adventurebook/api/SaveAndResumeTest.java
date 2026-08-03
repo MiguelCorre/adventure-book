@@ -127,8 +127,8 @@ class SaveAndResumeTest {
         mockMvc.perform(get("/api/books"))
                 .andExpect(jsonPath("$[0].slug").value("clockwork-lighthouse"))
                 .andExpect(jsonPath("$[0].hasSave").value(true))
-                .andExpect(jsonPath("$[4].slug").value("sunken-orchard"))
-                .andExpect(jsonPath("$[4].hasSave").value(false));
+                .andExpect(jsonPath("$[1].slug").value("sunken-orchard"))
+                .andExpect(jsonPath("$[1].hasSave").value(false));
     }
 
     @Test

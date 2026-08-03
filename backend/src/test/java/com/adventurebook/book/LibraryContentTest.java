@@ -2,7 +2,6 @@ package com.adventurebook.book;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -12,29 +11,29 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Guards the books that ship with the application.
+ * Guards the boundary between the supplied catalogue and our optional upload samples.
  *
- * <p>Because every supplied book is unplayable, the library needs content of its own or
- * none of the game could be demonstrated. These two are written for that purpose and the
- * assertions below keep them honest: playable, and still exercising every mechanic the
- * brief asks for.
+ * <p>The application starts with exactly the four assessment files, all unplayable for the
+ * independently verified reasons pinned by {@link SuppliedBooksTest}. The two original books
+ * live outside that catalogue so they can be uploaded during a demo; the assertions below
+ * keep those samples playable and exercising every required mechanic.
  */
 class LibraryContentTest {
 
-    private static final Path SHIPPED_BOOKS = Path.of("../books");
+    private static final Path SUPPLIED_BOOKS = Path.of("../books");
+    private static final Path UPLOAD_SAMPLES = Path.of("../upload-samples");
 
     private BookRepository repository;
 
     @BeforeAll
     static void booksDirectoryIsWhereWeThinkItIs() {
-        assertThat(Files.isDirectory(SHIPPED_BOOKS))
-                .as("books directory resolved from the backend working directory")
-                .isTrue();
+        assertThat(SUPPLIED_BOOKS).isDirectory();
+        assertThat(UPLOAD_SAMPLES).isDirectory();
     }
 
     @BeforeEach
     void loadLibrary() {
-        repository = new BookRepository(SHIPPED_BOOKS, new BookJsonMapper(), new ValidationEngine());
+        repository = new BookRepository(UPLOAD_SAMPLES, new BookJsonMapper(), new ValidationEngine());
         repository.reload();
     }
 
@@ -65,13 +64,25 @@ class LibraryContentTest {
     }
 
     @Test
-    @DisplayName("the library contains exactly the two playable books we wrote")
-    void onlyOurOwnBooksArePlayable() {
+    @DisplayName("the initial catalogue contains exactly the four supplied, unplayable books")
+    void initialCatalogueContainsOnlySuppliedBooks() {
+        BookRepository supplied = new BookRepository(
+                SUPPLIED_BOOKS, new BookJsonMapper(), new ValidationEngine());
+        supplied.reload();
+
+        assertThat(supplied.findAll()).extracting(LoadedBook::slug)
+                .containsExactly("crystal-caverns", "dragon-quest", "pirates-jade-sea", "the-prisoner");
+        assertThat(supplied.findAll()).noneMatch(LoadedBook::isPlayable);
+    }
+
+    @Test
+    @DisplayName("the upload samples contain exactly the two playable books we wrote")
+    void onlyOurOwnSamplesArePlayable() {
         List<LoadedBook> playable = repository.findAll().stream().filter(LoadedBook::isPlayable).toList();
 
         assertThat(playable).extracting(LoadedBook::slug)
                 .containsExactly("clockwork-lighthouse", "sunken-orchard");
-        assertThat(repository.findAll()).hasSize(6);
+        assertThat(repository.findAll()).hasSize(2);
     }
 
     @Test

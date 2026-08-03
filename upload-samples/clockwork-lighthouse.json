@@ -1,10 +1,13 @@
 {
   "title": "The Clockwork Lighthouse",
   "author": "Ines Vaz-Corvo",
+  "description": "A lighthouse has gone dark with a ship drifting towards the rocks. Climb through storm and broken machinery to bring its warning light back to the sea.",
+  "tags": ["Steampunk", "Mystery", "Coastal"],
   "difficulty": "MEDIUM",
   "sections": [
     {
       "id": 1,
+      "title": "The Dark Beacon",
       "text": "The keeper's boat left an hour ago and has not come back. From the shingle you can see the lighthouse standing dark against a bruised sky, its great lamp dead for the first time in ninety years. The tide is turning, and somewhere beyond the headland a cargo ship is sounding her horn in the wrong direction.",
       "type": "BEGIN",
       "options": [
@@ -25,6 +28,7 @@
     },
     {
       "id": 10,
+      "title": "The Outer Stair",
       "text": "The stair clings to the outside of the tower, worn smooth by a century of boots. Salt spray reaches you even at this height. Above, the gallery rail is missing three of its uprights.",
       "type": "NODE",
       "options": [
@@ -45,6 +49,7 @@
     },
     {
       "id": 20,
+      "title": "The Flooded Machinery",
       "text": "The machine room smells of brine and hot brass. Seawater stands knee-deep across the floor, and the great counterweight that drives the lamp hangs motionless in its shaft. A workbench sits above the waterline on the far wall.",
       "type": "NODE",
       "options": [
@@ -65,6 +70,7 @@
     },
     {
       "id": 30,
+      "title": "The Gull's Nest",
       "text": "Halfway up, the wind turns and pins you against the stone. A herring gull that has nested in the tower wall comes off her eggs screaming, close enough that you feel the wingbeat on your face. A window stands open an arm's length to your left.",
       "type": "NODE",
       "options": [
@@ -85,6 +91,7 @@
     },
     {
       "id": 40,
+      "title": "The Silent Lens",
       "text": "The lamp room is a cathedral of glass. The lens sits in its cradle, big as a rowing boat and perfectly still, and the clockwork that should be turning it has stopped dead. One brass gear has jumped its seat and jammed against the frame. The crank handle is stowed on the wall where the keeper left it.",
       "type": "NODE",
       "options": [
@@ -105,6 +112,7 @@
     },
     {
       "id": 50,
+      "title": "The Keeper's Workbench",
       "text": "The workbench is the keeper's whole life in miniature: oil cans, a tin of good tobacco, a tide table annotated in pencil going back years. Under it all is a first-aid tin with a red cross worn almost to nothing.",
       "type": "NODE",
       "options": [
@@ -125,6 +133,7 @@
     },
     {
       "id": 60,
+      "title": "The Missing Oilskin",
       "text": "Patched up and steadier now, you notice what you missed before: the keeper's oilskin is gone from its hook, but his boots are still under the bench. Wherever he went, he went in a hurry and he went barefoot.",
       "type": "NODE",
       "options": [
@@ -136,6 +145,7 @@
     },
     {
       "id": 70,
+      "title": "The Storm Gallery",
       "text": "The outer gallery runs right around the lamp room, and the gale up here has a voice of its own. Below and to the north, closer than it has any right to be, the cargo ship is showing her red side light. She is turning towards the rocks, not away from them.",
       "type": "NODE",
       "options": [
@@ -156,11 +166,13 @@
     },
     {
       "id": 80,
+      "title": "The Returning Light",
       "text": "The crank bites, the counterweight starts its long fall down the shaft, and the lens begins to turn. Light goes out across the water in a slow white sweep, catches the cargo ship broadside, and holds her. You watch her come about, well short of the rocks. When the keeper's boat finally returns at dawn he says nothing at all, just looks up at the turning lamp and takes off his cap.",
       "type": "END"
     },
     {
       "id": 90,
+      "title": "The Freed Gear",
       "text": "The gear is seated. Your hand is a ruin, but the train is free and the crank is still on the wall.",
       "type": "NODE",
       "options": [
@@ -172,6 +184,7 @@
     },
     {
       "id": 100,
+      "title": "A Sailor's Signal",
       "text": "You brace against the rail and swing the lantern in the long arc every sailor on this coast learns before they learn to swim. For a moment nothing. Then her bow swings hard to starboard, and her horn answers you twice across the water. The lamp above you never does turn that night, but the light that mattered came from your hand.",
       "type": "END"
     }

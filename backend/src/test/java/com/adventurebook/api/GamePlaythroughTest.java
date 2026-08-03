@@ -21,11 +21,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Plays the shipped books through the real HTTP API.
+ * Plays the original upload samples through the real HTTP API.
  *
- * <p>Runs against {@code ../books} rather than a fixture directory, so these tests fail
- * if the content that ships with the application stops supporting the mechanics the brief
- * asks us to demonstrate.
+ * <p>Runs against {@code ../upload-samples}, so these tests fail if the books used to
+ * demonstrate upload stop supporting the mechanics the brief asks us to demonstrate.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -159,15 +158,6 @@ class GamePlaythroughTest {
                 .content("{\"optionIndex\":0}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Adventure already over"));
-    }
-
-    @Test
-    void refusesToStartABookThatFailedValidation() throws Exception {
-        mockMvc.perform(post("/api/games")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"bookSlug\":\"pirates-jade-sea\"}"))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.title").value("Book cannot be played"));
     }
 
     @Test

@@ -111,6 +111,12 @@ removed afterwards, so the successful-upload scenario never changes the working 
 Books are JSON files in [`books/`](books/). The directory is configurable via
 `adventure.books-dir` (see [`application.yml`](backend/src/main/resources/application.yml)).
 
+The initial catalogue contains exactly the four files supplied with the assessment. They are
+kept unchanged and intentionally remain unplayable, allowing the library to demonstrate its
+validation diagnostics honestly. [`upload-samples/`](upload-samples/) contains two original,
+valid books that are not loaded at startup; use **Add book** to upload either one during a demo
+and immediately unlock gameplay.
+
 ```json
 {
   "title": "The Brass Key",
@@ -285,7 +291,8 @@ directly.
 ## Layout
 
 ```
-books/                     book JSON files, including the four supplied ones
+books/                     the four supplied assessment JSON files (unchanged)
+upload-samples/            two original valid books for demonstrating upload and gameplay
 backend/
   src/main/java/com/adventurebook/
     book/                  domain model, loading, validation, upload

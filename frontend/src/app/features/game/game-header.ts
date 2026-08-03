@@ -15,8 +15,10 @@ export class GameHeader {
   readonly maxHealth = input.required<number>();
   readonly canSave = input(true);
   readonly saving = input(false);
+  readonly pausing = input(false);
 
   readonly leave = output<void>();
+  readonly pause = output<void>();
   readonly save = output<void>();
 
   /** One pip per health point, so the bar reads at a glance rather than as a number. */

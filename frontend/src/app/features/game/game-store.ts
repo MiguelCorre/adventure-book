@@ -23,12 +23,14 @@ export class GameStore {
   private readonly _state = signal<GameState | null>(null);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
+  private readonly _pausing = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _notice = signal<string | null>(null);
 
   readonly state = this._state.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly saving = this._saving.asReadonly();
+  readonly pausing = this._pausing.asReadonly();
   readonly error = this._error.asReadonly();
   readonly notice = this._notice.asReadonly();
 
@@ -47,6 +49,7 @@ export class GameStore {
     this._state.set(null);
     this._loading.set(true);
     this._saving.set(false);
+    this._pausing.set(false);
     this._error.set(null);
     this._notice.set(null);
     this.stateSubscription = this.api.get(gameId).subscribe({
@@ -57,7 +60,7 @@ export class GameStore {
 
   choose(optionIndex: number): void {
     const current = this._state();
-    if (!current || this.finished() || this._loading() || this._saving()) {
+    if (!current || this.finished() || this._loading() || this._saving() || this._pausing()) {
       return;
     }
 
@@ -70,23 +73,45 @@ export class GameStore {
   }
 
   save(): void {
-    const current = this._state();
-    if (!current || this.finished() || this._loading() || this._saving()) {
+    const current = this.currentSavableGame();
+    if (!current) {
       return;
     }
 
     this._saving.set(true);
-    this._error.set(null);
-    this.saveSubscription = this.api.save(current.gameId).subscribe({
-      next: () => {
+    this.persist(
+      current.gameId,
+      () => {
         this._saving.set(false);
         this._notice.set('Progress saved.');
       },
-      error: (failure) => {
-        this._saving.set(false);
-        this._error.set(messageOf(failure, 'Progress could not be saved.'));
+      () => this._saving.set(false),
+    );
+  }
+
+  /** Persists the current position before returning to the library. */
+  pause(): void {
+    const current = this.currentSavableGame();
+    if (!current) {
+      return;
+    }
+
+    this._pausing.set(true);
+    this._notice.set(null);
+    this.persist(
+      current.gameId,
+      () => {
+        void this.router.navigate(['/']).then(
+          (navigated) => {
+            if (!navigated) {
+              this.pauseNavigationFailed();
+            }
+          },
+          () => this.pauseNavigationFailed(),
+        );
       },
-    });
+      () => this._pausing.set(false),
+    );
   }
 
   /** Starts the same book again from the beginning, after a death or a win. */
@@ -111,7 +136,9 @@ export class GameStore {
     // GamePage resets only after a successful navigation. Resetting here would erase the
     // session before CanDeactivate has a chance to ask, and a declined exit could not be
     // restored.
-    void this.router.navigate(['/']);
+    if (!this._pausing()) {
+      void this.router.navigate(['/']);
+    }
   }
 
   reset(): void {
@@ -119,6 +146,7 @@ export class GameStore {
     this._state.set(null);
     this._loading.set(false);
     this._saving.set(false);
+    this._pausing.set(false);
     this._error.set(null);
     this._notice.set(null);
   }
@@ -140,5 +168,28 @@ export class GameStore {
   private fail(failure: unknown, fallback: string): void {
     this._loading.set(false);
     this._error.set(messageOf(failure, fallback));
+  }
+
+  private pauseNavigationFailed(): void {
+    this._pausing.set(false);
+    this._error.set('The library could not be opened. Your progress was saved.');
+  }
+
+  private currentSavableGame(): GameState | null {
+    const current = this._state();
+    return !current || this.finished() || this._loading() || this._saving() || this._pausing()
+      ? null
+      : current;
+  }
+
+  private persist(gameId: string, onSuccess: () => void, onError: () => void): void {
+    this._error.set(null);
+    this.saveSubscription = this.api.save(gameId).subscribe({
+      next: onSuccess,
+      error: (failure) => {
+        onError();
+        this._error.set(messageOf(failure, 'Progress could not be saved.'));
+      },
+    });
   }
 }

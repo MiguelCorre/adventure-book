@@ -274,6 +274,11 @@ the repository transaction begins, so simultaneous first saves cannot race. In a
 horizontally scaled Oracle deployment, that boundary would move to the database through an
 Oracle `MERGE` or a unique-constraint retry policy.
 
+**Pause is an atomic user intention: save, then return.** The game remains on screen if the
+save fails, so leaving can never masquerade as a successful pause. Once saving succeeds, the
+normal unsaved-progress warning is bypassed only for that navigation and the library offers
+*Continue* at the exact section and health value.
+
 **An uploaded file never names itself on disk.** The stored filename is derived from the
 book's own title through an allow-list of characters. A client-supplied filename is
 untrusted input and would be a path traversal waiting to happen.

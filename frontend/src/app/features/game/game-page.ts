@@ -32,6 +32,11 @@ export class GamePage implements OnDestroy, GameExitAware {
   }
 
   canDeactivate(nextUrl: string): boolean {
+    // Pause owns a save-then-navigate transaction; asking whether to discard after that
+    // successful save would contradict the action the player just chose.
+    if (this.store.pausing()) {
+      return true;
+    }
     // Restart already holds the fresh state before navigating to its new UUID. That route
     // is the state catching up with its own URL, not the reader abandoning progress.
     if (nextUrl === `/play/${this.store.state()?.gameId}`) {

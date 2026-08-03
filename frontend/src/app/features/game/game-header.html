@@ -1,5 +1,6 @@
 <header class="game-header">
-  <button type="button" class="button button--ghost game-header__leave" (click)="leave.emit()">
+  <button type="button" class="button button--ghost game-header__leave"
+          [disabled]="pausing()" (click)="leave.emit()">
     ← Back to Library
   </button>
 
@@ -20,8 +21,21 @@
 
   <button
     type="button"
+    class="button button--ghost game-header__pause"
+    [disabled]="!canSave() || saving() || pausing()"
+    (click)="pause.emit()"
+  >
+    @if (pausing()) {
+      Pausing...
+    } @else {
+      <span aria-hidden="true">&#x23F8;</span> Pause
+    }
+  </button>
+
+  <button
+    type="button"
     class="button button--ghost game-header__save"
-    [disabled]="!canSave() || saving()"
+    [disabled]="!canSave() || saving() || pausing()"
     (click)="save.emit()"
   >
     {{ saving() ? 'Saving…' : '⌸ Save Progress' }}

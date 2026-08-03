@@ -5,7 +5,9 @@
     [maxHealth]="game.maxHealth"
     [canSave]="!store.finished() && !store.loading()"
     [saving]="store.saving()"
+    [pausing]="store.pausing()"
     (leave)="store.leave()"
+    (pause)="store.pause()"
     (save)="store.save()"
   />
 
@@ -21,7 +23,7 @@
       <app-section-view
         [section]="game.section"
         [consequence]="game.lastConsequence"
-        [busy]="store.loading() || store.saving()"
+        [busy]="store.loading() || store.saving() || store.pausing()"
         [showChoices]="!store.finished()"
         (choose)="store.choose($event)"
       />

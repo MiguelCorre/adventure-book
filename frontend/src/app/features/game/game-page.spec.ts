@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GameState } from '../../core/models';
@@ -186,7 +186,42 @@ describe('GamePage', () => {
     expect(html().querySelector('[role="status"]')?.textContent).toContain('Progress saved.');
   });
 
-  it('does not save a stale position while a choice is being resolved', () => {
+  it('pauses by saving before returning to the library without a leave confirmation', () => {
+    open(game());
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const confirm = vi.fn();
+    vi.stubGlobal('confirm', confirm);
+
+    html().querySelector<HTMLButtonElement>('.game-header__pause')!.click();
+
+    const request = http.expectOne('/api/games/game-1/save');
+    expect(request.request.method).toBe('POST');
+    expect(fixture.componentInstance.canDeactivate('/')).toBe(true);
+    expect(confirm).not.toHaveBeenCalled();
+    request.flush(null);
+
+    expect(navigate).toHaveBeenCalledWith(['/']);
+  });
+
+  it('stays in the game and reports the error when pausing cannot save', () => {
+    open(game());
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    html().querySelector<HTMLButtonElement>('.game-header__pause')!.click();
+    http.expectOne('/api/games/game-1/save').flush(
+      { detail: 'The save store is unavailable.' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    fixture.detectChanges();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(TestBed.inject(GameStore).pausing()).toBe(false);
+    expect(html().querySelector('[role="alert"]')?.textContent)
+      .toContain('The save store is unavailable.');
+  });
+
+  it('does not save or pause a stale position while a choice is being resolved', () => {
     open(game());
 
     html().querySelector<HTMLButtonElement>('.choice')!.click();
@@ -194,9 +229,12 @@ describe('GamePage', () => {
     fixture.detectChanges();
 
     const save = html().querySelector<HTMLButtonElement>('.game-header__save')!;
+    const pause = html().querySelector<HTMLButtonElement>('.game-header__pause')!;
     expect(save.disabled).toBe(true);
+    expect(pause.disabled).toBe(true);
     save.click();
     TestBed.inject(GameStore).save();
+    TestBed.inject(GameStore).pause();
     http.expectNone('/api/games/game-1/save');
 
     choice.flush(game({ section: { ...game().section, id: '2' } }));
@@ -274,6 +312,9 @@ describe('GamePage', () => {
     }));
 
     expect(html().querySelector<HTMLButtonElement>('.game-header__save')!.disabled).toBe(true);
+    expect(html().querySelector<HTMLButtonElement>('.game-header__pause')!.disabled).toBe(true);
+    TestBed.inject(GameStore).pause();
+    http.expectNone('/api/games/game-1/save');
   });
 
   it('restarts the same book from the beginning', () => {

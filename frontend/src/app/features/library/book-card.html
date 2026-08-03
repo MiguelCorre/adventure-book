@@ -6,11 +6,18 @@
     }
   </header>
 
+  @if (book().description) {
+    <p class="card__description">{{ book().description }}</p>
+  }
+
   <div class="card__badges">
     @if (book().difficulty) {
       <span class="badge" [class]="difficultyClass()">{{ book().difficulty }}</span>
     }
     <span class="badge badge--neutral">{{ book().sectionCount }} sections</span>
+    @if (book().readingMinutes > 0) {
+      <span class="badge badge--neutral badge--duration">~{{ book().readingMinutes }} min</span>
+    }
     @if (!book().valid) {
       <span class="badge badge--invalid">Unplayable</span>
     }
@@ -18,6 +25,14 @@
       <span class="badge badge--neutral">Saved</span>
     }
   </div>
+
+  @if (book().tags.length > 0) {
+    <div class="card__tags" aria-label="Themes">
+      @for (tag of book().tags; track tag) {
+        <span class="card__tag">{{ tag }}</span>
+      }
+    </div>
+  }
 
   @if (!book().valid) {
     <div class="card__issues">

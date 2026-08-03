@@ -22,8 +22,11 @@ export interface BookSummary {
   readonly slug: string;
   readonly title: string;
   readonly author: string | null;
+  readonly description: string | null;
+  readonly tags: readonly string[];
   readonly difficulty: Difficulty | null;
   readonly sectionCount: number;
+  readonly readingMinutes: number;
   readonly valid: boolean;
   readonly issues: readonly ValidationIssue[];
   readonly hasSave: boolean;

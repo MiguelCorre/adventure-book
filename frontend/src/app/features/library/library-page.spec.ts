@@ -99,7 +99,14 @@ describe('LibraryPage', () => {
   it('announces how many adventures are available', () => {
     settle([book(), TRAPPED]);
 
-    expect(html().querySelector('.hero__count')?.textContent).toContain('2 adventures available');
+    expect(html().querySelector('.hero__count')?.textContent).toContain('2 Epic Adventures Available');
+  });
+
+  it('pluralises the hero count for one adventure', () => {
+    settle([book()]);
+
+    expect(html().querySelector('.hero__count')?.textContent).toContain('1 Epic Adventure Available');
+    expect(html().querySelector('.hero__count')?.textContent).not.toContain('1 Epic Adventures');
   });
 
   it('disables the play button for an unplayable book', () => {

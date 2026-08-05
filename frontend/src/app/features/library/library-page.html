@@ -5,12 +5,14 @@
     solve ancient mysteries, and become the hero of your own story.
   </p>
   <p class="hero__count">
-    {{ books().length }} {{ books().length === 1 ? 'adventure' : 'adventures' }} available
+    <span aria-hidden="true">📖</span>
+    {{ books().length }} Epic {{ books().length === 1 ? 'Adventure' : 'Adventures' }} Available
+    <span aria-hidden="true">✨</span>
   </p>
 </header>
 
 <main class="library">
-  <h2 class="library__title">The Adventure Library</h2>
+  <h2 class="library__title"><span aria-hidden="true">📚</span> The Adventure Library</h2>
   <p class="library__intro">
     Choose your next adventure from our collection of interactive tales. Each book offers
     unique paths and multiple endings based on your choices.

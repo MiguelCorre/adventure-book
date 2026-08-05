@@ -378,6 +378,41 @@ describe('LibraryPage', () => {
     request.flush({ gameId: 'game-1' });
   });
 
+  it('discards a stale bookmark before starting fresh', () => {
+    settle([book({ hasSave: true })]);
+    vi.stubGlobal('confirm', vi.fn(() => true));
+
+    html().querySelector<HTMLButtonElement>('.card__begin')!.click();
+
+    expect(vi.mocked(window.confirm)).toHaveBeenCalled();
+    http.expectOne('/api/books/clockwork-lighthouse/save').flush(null);
+    const request = http.expectOne('/api/games');
+    expect(request.request.body).toEqual({ bookSlug: 'clockwork-lighthouse', fromSave: false });
+    request.flush({ gameId: 'fresh-game' });
+  });
+
+  it('does not discard or start when replacing a bookmark is declined', () => {
+    settle([book({ hasSave: true })]);
+    vi.stubGlobal('confirm', vi.fn(() => false));
+
+    html().querySelector<HTMLButtonElement>('.card__begin')!.click();
+
+    http.expectNone('/api/books/clockwork-lighthouse/save');
+    http.expectNone('/api/games');
+  });
+
+  it('does not start if replacing the bookmark fails', () => {
+    settle([book({ hasSave: true })]);
+    vi.stubGlobal('confirm', vi.fn(() => true));
+
+    html().querySelector<HTMLButtonElement>('.card__begin')!.click();
+    http.expectOne('/api/books/clockwork-lighthouse/save').error(new ProgressEvent('failure'), { status: 500 });
+    fixture.detectChanges();
+
+    expect(http.match('/api/games')).toHaveLength(0);
+    expect(html().querySelector('[role="alert"]')?.textContent).toContain('save');
+  });
+
   it('asks to continue from the save when Continue is pressed', () => {
     settle([book({ hasSave: true })]);
 

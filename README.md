@@ -244,6 +244,11 @@ vanished, so the card shows the reasons and disables the button.
 across the whole catalogue; multiple selected tags use OR semantics within the tag filter,
 then AND with search and difficulty. Tags on cards remain presentation-only.
 
+**Starting over is explicit.** Begin Quest on a card with saved progress confirms first,
+discards that bookmark, and only then starts a new session. The game-over Play Again flow
+remains an immediate retry: the game store does not carry save-slot state, and adding a
+second confirmation there would interrupt the retry path without improving the contract.
+
 **Every problem is reported at once.** Validation does not stop at the first failure. The
 library explains everything wrong with a book in one place, and an upload returns the whole
 list so a curator can fix it in one pass.

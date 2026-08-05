@@ -219,6 +219,16 @@ export class LibraryPage implements OnInit {
   }
 
   protected beginQuest(book: BookSummary): void {
+    if (book.hasSave) {
+      if (!window.confirm(`Start "${book.title}" from the beginning? Your saved bookmark for this book will be discarded.`)) {
+        return;
+      }
+      this.booksApi.discardSave(book.slug).subscribe({
+        next: () => this.openGame(book, false),
+        error: (failure) => this.error.set(messageOf(failure, 'The save could not be discarded.')),
+      });
+      return;
+    }
     this.openGame(book, false);
   }
 

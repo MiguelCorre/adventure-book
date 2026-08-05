@@ -59,6 +59,24 @@ body {
   padding: 0;
 }
 
+html {
+  scrollbar-color: var(--gold) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 body {
   background: var(--surface-page);
   color: var(--ink);

@@ -51,6 +51,23 @@ test('shows optional synopses and themes without empty placeholders', async ({ p
   await expectNoHorizontalOverflow(page);
 });
 
+test('filters by tag and the card follows the mockup details', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+
+  await page.getByRole('button', { name: 'Steampunk', exact: true }).click();
+  await expect(page.locator('app-book-card')).toHaveCount(1);
+  const lighthouse = bookCard(page, 'The Clockwork Lighthouse');
+  await expect(lighthouse.locator('.card__meta')).toContainText(/\d+ chapters/);
+  await expect(lighthouse.locator('.card__meta')).toContainText(/~\d+ min/);
+  await expect(lighthouse.locator('.card__description')).toContainText(
+    'Climb through storm and broken machinery to bring its warning light back to the sea.',
+  );
+  await expectNoHorizontalOverflow(page);
+
+  await page.locator('.library__filters').getByRole('button', { name: 'Clear filters' }).click();
+  await expect(page.locator('app-book-card')).toHaveCount(6);
+});
+
 test('explains why each supplied book cannot be finished', async ({ page }) => {
   const prisoner = bookCard(page, 'The Prisoner');
   await prisoner.getByRole('button', { name: /Show 1 problem/ }).click();
@@ -89,7 +106,7 @@ test('narrows the library by difficulty and by author', async ({ page }) => {
 
   await page.getByPlaceholder('Search adventures...').fill('submarine');
   await expect(page.getByText('No adventures match your search')).toBeVisible();
-  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await page.locator('.library__status').getByRole('button', { name: 'Clear filters' }).click();
   await expect(page.locator('app-book-card')).toHaveCount(6);
 });
 

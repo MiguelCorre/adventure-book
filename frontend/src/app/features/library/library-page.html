@@ -52,6 +52,11 @@
           {{ tag }}
         </button>
       }
+      @if (query() || selectedDifficulties().length > 0 || selectedTags().length > 0) {
+        <button type="button" class="chip chip--clear" (click)="clearFilters()">
+          Clear filters
+        </button>
+      }
     </div>
 
     <app-upload-book (added)="onBookAdded()" />

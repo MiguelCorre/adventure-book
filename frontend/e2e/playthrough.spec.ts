@@ -176,6 +176,43 @@ test('saved progress survives and resumes on the same section', async ({ page })
   await expect(orchard.getByText('Saved', { exact: true })).toHaveCount(0);
 });
 
+test('starting a saved book over confirms and removes the stale Continue bookmark', async ({ page }) => {
+  await beginQuest(page, 'The Sunken Orchard');
+  await choose(page, 'Row out to the nearest treetop');
+  await page.getByRole('button', { name: /Save Progress/ }).click();
+  await expect(page.getByText('Progress saved.')).toBeVisible();
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: /Back to Library/ }).click();
+  const orchard = bookCard(page, 'The Sunken Orchard');
+  await expect(orchard.getByRole('button', { name: 'Continue' })).toBeVisible();
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await orchard.getByRole('button', { name: 'Begin Quest' }).click();
+  await expect(page).toHaveURL(/\/play\//);
+  await expect(page.locator('.section__text').first()).toBeVisible();
+
+  await page.getByRole('button', { name: /Back to Library/ }).click();
+  await expect(bookCard(page, 'The Sunken Orchard').getByRole('button', { name: 'Continue' })).toHaveCount(0);
+  await expect(bookCard(page, 'The Sunken Orchard').getByText('Saved', { exact: true })).toHaveCount(0);
+});
+
+test('declining a fresh start leaves the saved bookmark intact', async ({ page }) => {
+  await beginQuest(page, 'The Sunken Orchard');
+  await page.getByRole('button', { name: /Save Progress/ }).click();
+  await expect(page.getByText('Progress saved.')).toBeVisible();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: /Back to Library/ }).click();
+
+  page.once('dialog', (dialog) => dialog.dismiss());
+  await bookCard(page, 'The Sunken Orchard').getByRole('button', { name: 'Begin Quest' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(bookCard(page, 'The Sunken Orchard').getByRole('button', { name: 'Continue' })).toBeVisible();
+
+  const cleanup = await page.request.delete('/api/books/sunken-orchard/save');
+  expect(cleanup.ok()).toBe(true);
+});
+
 /**
  * The router reuses the game component when only the route parameter changes, so loading
  * has to follow the id. This caught a real defect: the address bar pointed at the finished

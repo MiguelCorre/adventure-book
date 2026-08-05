@@ -43,9 +43,10 @@
   --radius: 10px;
   --radius-lg: 16px;
 
-  /* Type */
+  /* Type — the brief's mockup is set in one classic book serif throughout (titles, body,
+     tags and buttons alike), so display and body share the same family. */
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
-  --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
 }
 
 * {

@@ -84,7 +84,7 @@ cd frontend
 npm test
 ```
 
-160 backend tests and 90 frontend tests. Once dependencies are installed, both suites run
+160 backend tests and 91 frontend tests. Once dependencies are installed, both suites run
 without an external database, a browser or a network connection; backend persistence tests
 use embedded H2.
 
@@ -96,7 +96,7 @@ npm run e2e:install
 npm run e2e
 ```
 
-22 specs covering the ground the unit suites structurally cannot reach: what is actually
+23 specs covering the ground the unit suites structurally cannot reach: what is actually
 painted, real browser history, and real layout. They found three defects that unit tests
 had no way to see — a duplicated ending passage, choices offered to a dead player, and a
 scroll position that jumped when the result set shrank. The backend runs against an

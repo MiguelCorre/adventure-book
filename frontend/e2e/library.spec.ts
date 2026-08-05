@@ -34,6 +34,20 @@ test('lists every book, and only the two we wrote can be played', async ({ page 
   }
 });
 
+test('matches the mockup hero and library controls', async ({ page }) => {
+  await expect(page.locator('.hero__title')).toHaveText('Adventure Awaits');
+  await expect(page.locator('.hero__count')).toContainText('6 Epic Adventures Available');
+  await expect(page.locator('.hero__count span[aria-hidden="true"]')).toHaveCount(2);
+  await expect(page.locator('.library__title')).toContainText('The Adventure Library');
+  await expect(page.locator('.library__title span[aria-hidden="true"]')).toHaveCount(1);
+  await expect(page.locator('.library__search-icon')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('.library__filters-label svg')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.getByRole('button', { name: 'Easy', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Medium', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Hard', exact: true })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
 test('shows optional synopses and themes without empty placeholders', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
 
@@ -88,16 +102,16 @@ test('explains why each supplied book cannot be finished', async ({ page }) => {
 });
 
 test('narrows the library by difficulty and by author', async ({ page }) => {
-  await page.getByRole('button', { name: 'EASY', exact: true }).click();
+  await page.getByRole('button', { name: 'Easy', exact: true }).click();
   await expect(page.locator('app-book-card')).toHaveCount(2);
 
   // Difficulties are additive, not exclusive.
-  await page.getByRole('button', { name: 'HARD', exact: true }).click();
+  await page.getByRole('button', { name: 'Hard', exact: true }).click();
   await expect(page.locator('app-book-card')).toHaveCount(3);
   await expect(bookCard(page, 'The Prisoner')).toBeVisible();
 
-  await page.getByRole('button', { name: 'EASY', exact: true }).click();
-  await page.getByRole('button', { name: 'HARD', exact: true }).click();
+  await page.getByRole('button', { name: 'Easy', exact: true }).click();
+  await page.getByRole('button', { name: 'Hard', exact: true }).click();
   await expect(page.locator('app-book-card')).toHaveCount(6);
 
   await page.getByPlaceholder('Search adventures...').fill('stormrider');
@@ -117,7 +131,7 @@ test('keeps the previous results on screen while the next set is fetched', async
     await route.continue();
   });
 
-  await page.getByRole('button', { name: 'MEDIUM', exact: true }).click();
+  await page.getByRole('button', { name: 'Medium', exact: true }).click();
 
   // Mid-flight: the old cards are still there, marked busy, rather than replaced by a
   // loading message.
@@ -141,7 +155,7 @@ test('does not let the page jump when filtering while the page is scrolled', asy
   await page.setViewportSize({ width: 900, height: 1000 });
   await expect(page.locator('app-book-card')).toHaveCount(6);
 
-  const medium = page.getByRole('button', { name: 'MEDIUM', exact: true });
+  const medium = page.getByRole('button', { name: 'Medium', exact: true });
   await medium.evaluate((element) => element.scrollIntoView({ block: 'start' }));
   const before = await page.evaluate(() => ({
     scrollY: Math.round(window.scrollY),
@@ -177,7 +191,7 @@ test('leaves a reader who is already at the top exactly where they are', async (
   await expect(page.locator('app-book-card')).toHaveCount(6);
   expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
 
-  await page.getByRole('button', { name: 'MEDIUM', exact: true }).click();
+  await page.getByRole('button', { name: 'Medium', exact: true }).click();
   await expect(page.locator('app-book-card')).toHaveCount(2);
 
   expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);

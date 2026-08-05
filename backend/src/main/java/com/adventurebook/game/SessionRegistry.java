@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.adventurebook.game.GameExceptions.GameNotFoundException;
@@ -32,6 +33,7 @@ public class SessionRegistry {
     private final Queue<UUID> insertionOrder = new ArrayDeque<>();
     private final int capacity;
 
+    @Autowired
     public SessionRegistry() {
         this(DEFAULT_CAPACITY);
     }

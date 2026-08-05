@@ -92,7 +92,7 @@ public class GameEngine {
 
         Option chosen = options.get(optionIndex);
         Consequence consequence = chosen.consequence();
-        int health = clamp((long) session.health() + healthDeltaOf(consequence));
+        int health = clamp(session.health() + healthDeltaOf(consequence));
 
         if (health == 0) {
             return session.at(current.id(), 0, GameStatus.DEAD, consequence);
@@ -125,6 +125,6 @@ public class GameEngine {
     }
 
     private int clamp(long health) {
-        return (int) Math.max(0L, Math.min(startingHealth, health));
+        return Math.clamp(health, 0, startingHealth);
     }
 }

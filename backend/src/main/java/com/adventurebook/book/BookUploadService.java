@@ -106,7 +106,7 @@ public class BookUploadService {
         String folded = Normalizer.normalize(title, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT);
-        String slug = folded.replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+        String slug = folded.replaceAll("[^a-z0-9]+", "-").replaceAll("(?:^-)|(?:-$)", "");
 
         if (slug.isEmpty()) {
             throw new BookRejectedException(

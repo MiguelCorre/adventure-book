@@ -59,15 +59,29 @@
   margin: 1.75rem 0 2rem;
 }
 
+.library__search {
+  position: relative;
+  display: block;
+}
+
 .library__search input {
   width: min(26rem, 90vw);
-  padding: 0.6rem 0.9rem;
+  padding: 0.6rem 0.9rem 0.6rem 2.25rem;
   background: var(--surface-card);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   color: var(--ink);
   font: inherit;
   font-size: 0.9rem;
+}
+
+.library__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.85rem;
+  transform: translateY(-50%);
+  color: var(--ink-muted);
+  pointer-events: none;
 }
 
 .library__filters {
@@ -79,8 +93,19 @@
 }
 
 .library__filters-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   color: var(--ink-muted);
   font-size: 0.8rem;
+}
+
+.library__filters-label svg {
+  flex: 0 0 auto;
+}
+
+.chip--difficulty {
+  text-transform: capitalize;
 }
 
 .chip {

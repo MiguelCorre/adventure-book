@@ -21,6 +21,11 @@
   <div class="library__controls">
     <label class="library__search">
       <span class="visually-hidden">Search adventures</span>
+      <svg class="library__search-icon" viewBox="0 0 24 24" width="1em" height="1em"
+           fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m16 16 4 4" />
+      </svg>
       <input
         #searchInput
         type="search"
@@ -31,16 +36,22 @@
     </label>
 
     <div class="library__filters" role="group" aria-label="Filter by difficulty and theme">
-      <span class="library__filters-label">Filters:</span>
+      <span class="library__filters-label">
+        <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor"
+             stroke-width="2" aria-hidden="true">
+          <path d="M4 5h16l-6 7v5l-4 2v-7z" />
+        </svg>
+        Filters:
+      </span>
       @for (difficulty of difficulties; track difficulty) {
         <button
           type="button"
-          class="chip"
+          class="chip chip--difficulty"
           [class.chip--active]="isSelected(difficulty)"
           [attr.aria-pressed]="isSelected(difficulty)"
           (click)="toggleDifficulty(difficulty)"
         >
-          {{ difficulty }}
+          {{ difficulty.toLowerCase() }}
         </button>
       }
       @for (tag of tags(); track tag) {

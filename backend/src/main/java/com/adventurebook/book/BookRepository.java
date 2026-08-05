@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -42,7 +43,11 @@ public class BookRepository {
     private final BookJsonMapper jsonMapper;
     private final ValidationEngine validationEngine;
 
-    private volatile Map<String, LoadedBook> booksBySlug = Map.of();
+    // Copy-on-write cache: reload() atomically swaps in a fresh immutable map. The reference
+    // is the only mutable state, and readers always see a whole, consistent snapshot. An
+    // AtomicReference makes that swap explicit (and satisfies Sonar S3077, which rightly warns
+    // that a volatile reference to a mutable type is usually a mistake — here it never mutates).
+    private final AtomicReference<Map<String, LoadedBook>> booksBySlug = new AtomicReference<>(Map.of());
 
     @Autowired
     public BookRepository(AdventureProperties properties, BookJsonMapper jsonMapper,
@@ -63,7 +68,7 @@ public class BookRepository {
         if (!Files.isDirectory(directory)) {
             log.warn("Books directory {} does not exist; the library will be empty",
                     directory.toAbsolutePath());
-            booksBySlug = Map.of();
+            booksBySlug.set(Map.of());
             return;
         }
 
@@ -81,7 +86,7 @@ public class BookRepository {
 
         // Deliberately not Map.copyOf: that returns an unordered map and would throw away
         // the alphabetical order the scan just established.
-        booksBySlug = Collections.unmodifiableMap(loaded);
+        booksBySlug.set(Collections.unmodifiableMap(loaded));
         log.info("Loaded {} book(s) from {}, {} playable", loaded.size(), directory.toAbsolutePath(),
                 loaded.values().stream().filter(LoadedBook::isPlayable).count());
     }
@@ -98,15 +103,15 @@ public class BookRepository {
     }
 
     public List<LoadedBook> findAll() {
-        return List.copyOf(booksBySlug.values());
+        return List.copyOf(booksBySlug.get().values());
     }
 
     public Optional<LoadedBook> findBySlug(String slug) {
-        return Optional.ofNullable(booksBySlug.get(slug));
+        return Optional.ofNullable(booksBySlug.get().get(slug));
     }
 
     public boolean exists(String slug) {
-        return booksBySlug.containsKey(slug);
+        return booksBySlug.get().containsKey(slug);
     }
 
     public Path directory() {

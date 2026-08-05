@@ -107,7 +107,8 @@ class SessionRegistryTest {
 
     @Test
     void refusesAMoveForAnUnknownGame() {
-        assertThatThrownBy(() -> registry.update(UUID.randomUUID(), current -> current))
+        UUID unknown = UUID.randomUUID();
+        assertThatThrownBy(() -> registry.update(unknown, current -> current))
                 .isInstanceOf(GameNotFoundException.class);
     }
 

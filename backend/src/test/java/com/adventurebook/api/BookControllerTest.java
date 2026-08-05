@@ -1,8 +1,8 @@
 package com.adventurebook.api;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -138,7 +138,7 @@ class BookControllerTest {
         ArgumentCaptor<Set<Difficulty>> difficulties = ArgumentCaptor.forClass(Set.class);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Set<String>> tags = ArgumentCaptor.forClass(Set.class);
-        org.mockito.Mockito.verify(bookService).search(query.capture(), difficulties.capture(), tags.capture());
+        verify(bookService).search(query.capture(), difficulties.capture(), tags.capture());
 
         org.assertj.core.api.Assertions.assertThat(query.getValue()).isEqualTo("prisoner");
         org.assertj.core.api.Assertions.assertThat(difficulties.getValue())
@@ -164,7 +164,7 @@ class BookControllerTest {
                 .andExpect(status().isOk());
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Set<String>> tags = ArgumentCaptor.forClass(Set.class);
-        org.mockito.Mockito.verify(bookService).search(any(), any(), tags.capture());
+        verify(bookService).search(any(), any(), tags.capture());
         org.assertj.core.api.Assertions.assertThat(tags.getValue()).containsExactlyInAnyOrder("Steampunk", "Mystery");
 
         mockMvc.perform(get("/api/books/tags"))
@@ -175,7 +175,7 @@ class BookControllerTest {
 
     @Test
     void returnsASingleBookBySlug() throws Exception {
-        given(bookRepository.findBySlug(eq("the-prisoner")))
+        given(bookRepository.findBySlug("the-prisoner"))
                 .willReturn(Optional.of(playable("the-prisoner", "The Prisoner", Difficulty.HARD)));
 
         mockMvc.perform(get("/api/books/the-prisoner"))

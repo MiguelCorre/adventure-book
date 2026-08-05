@@ -88,16 +88,16 @@ class SaveServiceTest {
 
     @Test
     void refusesToSaveAWonAdventure() {
-        assertThatThrownBy(() -> service.save(session("lighthouse", "80", 7, GameStatus.WON)))
-                .isInstanceOf(GameFinishedException.class);
+        GameSession won = session("lighthouse", "80", 7, GameStatus.WON);
+        assertThatThrownBy(() -> service.save(won)).isInstanceOf(GameFinishedException.class);
 
         assertThat(service.exists("lighthouse")).isFalse();
     }
 
     @Test
     void refusesToSaveADeadPlayer() {
-        assertThatThrownBy(() -> service.save(session("lighthouse", "40", 0, GameStatus.DEAD)))
-                .isInstanceOf(GameFinishedException.class);
+        GameSession dead = session("lighthouse", "40", 0, GameStatus.DEAD);
+        assertThatThrownBy(() -> service.save(dead)).isInstanceOf(GameFinishedException.class);
     }
 
     @Test

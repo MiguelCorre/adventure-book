@@ -115,7 +115,7 @@ class BookUploadTest {
     @DisplayName("the-prisoner.json is rejected with the rule it breaks")
     void rejectsASuppliedBookAndExplainsWhy() throws Exception {
         mockMvc.perform(multipart("/api/books").file(upload(suppliedBook("the-prisoner"))))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.title").value("Book rejected"))
                 .andExpect(jsonPath("$.issues.length()").value(1))
                 .andExpect(jsonPath("$.issues[0].rule").value("NO_DEAD_ENDS"))
@@ -128,21 +128,21 @@ class BookUploadTest {
     @DisplayName("a rejected upload reports every problem at once")
     void reportsAllProblemsInOneResponse() throws Exception {
         mockMvc.perform(multipart("/api/books").file(upload(suppliedBook("pirates-jade-sea"))))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.issues.length()").value(2));
     }
 
     @Test
     void rejectsAFileThatIsNotJson() throws Exception {
         mockMvc.perform(multipart("/api/books").file(upload("this is not a book")))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.issues[0].rule").value("UNREADABLE"));
     }
 
     @Test
     void rejectsAnEmptyFile() throws Exception {
         mockMvc.perform(multipart("/api/books").file(upload("")))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.issues[0].rule").value("UNREADABLE"));
     }
 

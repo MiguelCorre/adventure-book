@@ -181,7 +181,7 @@ class GamePlaythroughTest {
         mockMvc.perform(post("/api/games/%s/choices".formatted(gameId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"optionIndex\":99}"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.title").value("Choice not available"));
     }
 

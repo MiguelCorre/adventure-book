@@ -104,7 +104,7 @@ class MalformedRequestTest {
     void stillReportsDomainFailuresCorrectly() throws Exception {
         mockMvc.perform(get("/api/books/no-such-book")).andExpect(status().isNotFound());
         mockMvc.perform(json("/api/games", "{\"bookSlug\":\"pirates-jade-sea\"}"))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableContent());
         mockMvc.perform(get("/api/games/1e2d3c4b-0000-0000-0000-000000000000"))
                 .andExpect(status().isNotFound());
     }

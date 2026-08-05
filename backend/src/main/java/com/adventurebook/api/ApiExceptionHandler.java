@@ -58,18 +58,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BookNotPlayableException.class)
     public ProblemDetail handleUnplayable(BookNotPlayableException e) {
-        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Book cannot be played", e.getMessage(), "book-invalid");
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, "Book cannot be played", e.getMessage(), "book-invalid");
     }
 
     @ExceptionHandler(InvalidChoiceException.class)
     public ProblemDetail handleInvalidChoice(InvalidChoiceException e) {
-        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Choice not available", e.getMessage(), "invalid-choice");
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, "Choice not available", e.getMessage(), "invalid-choice");
     }
 
     /** Attaches the whole validation report so the curator can fix everything in one pass. */
     @ExceptionHandler(BookRejectedException.class)
     public ProblemDetail handleRejectedUpload(BookRejectedException e) {
-        ProblemDetail problem = problem(HttpStatus.UNPROCESSABLE_ENTITY, "Book rejected", e.getMessage(),
+        ProblemDetail problem = problem(HttpStatus.UNPROCESSABLE_CONTENT, "Book rejected", e.getMessage(),
                 "book-rejected");
         problem.setProperty("issues", e.report().issues().stream().map(ValidationIssueView::from).toList());
         return problem;

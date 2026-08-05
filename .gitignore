@@ -18,6 +18,10 @@ target/
 # Application runtime data (H2 file database)
 backend/data/
 
+# Uploaded books are runtime data. The four supplied fixtures are already tracked and
+# stay tracked (git ignores only untracked files); new uploads are intentionally not versioned.
+books/*.json
+
 # Node / Angular
 node_modules/
 .angular/

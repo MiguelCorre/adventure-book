@@ -44,19 +44,25 @@ public class BookController {
     }
 
     /**
-     * Lists the library, optionally narrowed by free text and difficulty.
+     * Lists the library, optionally narrowed by free text, difficulty and tags.
      *
      * <p>Filtering happens here rather than in the browser so every client behaves the
      * same way and the frontend stays a rendering layer.
      */
     @GetMapping
     public List<BookSummary> list(@RequestParam(required = false) String query,
-            @RequestParam(required = false) Set<Difficulty> difficulty) {
+            @RequestParam(required = false) Set<Difficulty> difficulty,
+            @RequestParam(required = false) Set<String> tag) {
         // Fetched once for the whole page rather than per card.
         Set<String> saved = saves.slugsWithSavedProgress();
-        return bookService.search(query, difficulty).stream()
+        return bookService.search(query, difficulty, tag).stream()
                 .map(book -> BookSummary.from(book, saved.contains(book.slug())))
                 .toList();
+    }
+
+    @GetMapping("/tags")
+    public List<String> tags() {
+        return bookService.tags();
     }
 
     @GetMapping("/{slug}")

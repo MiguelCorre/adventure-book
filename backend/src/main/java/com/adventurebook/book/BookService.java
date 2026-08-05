@@ -3,6 +3,7 @@ package com.adventurebook.book;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
 
@@ -25,12 +26,23 @@ public class BookService {
         this.repository = repository;
     }
 
-    public List<LoadedBook> search(String query, Set<Difficulty> difficulties) {
+    public List<LoadedBook> search(String query, Set<Difficulty> difficulties, Set<String> tags) {
         String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         return repository.findAll().stream()
                 .filter(book -> matchesText(book, needle))
                 .filter(book -> matchesDifficulty(book, difficulties))
+                .filter(book -> matchesTags(book, tags))
                 .toList();
+    }
+
+    public List<String> tags() {
+        TreeSet<String> tags = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        repository.findAll().stream()
+                .flatMap(book -> book.tags().stream())
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .forEach(tags::add);
+        return List.copyOf(tags);
     }
 
     public List<LoadedBook> findAll() {
@@ -49,6 +61,15 @@ public class BookService {
             return true;
         }
         return book.difficulty() != null && difficulties.contains(book.difficulty());
+    }
+
+    private boolean matchesTags(LoadedBook book, Set<String> selectedTags) {
+        if (selectedTags == null || selectedTags.isEmpty()) {
+            return true;
+        }
+        return book.tags().stream()
+                .anyMatch(tag -> selectedTags.stream().anyMatch(selected ->
+                        selected != null && tag.equalsIgnoreCase(selected)));
     }
 
     private static boolean contains(String haystack, String needle) {

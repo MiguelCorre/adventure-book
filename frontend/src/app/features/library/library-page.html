@@ -28,7 +28,7 @@
       />
     </label>
 
-    <div class="library__filters" role="group" aria-label="Filter by difficulty">
+    <div class="library__filters" role="group" aria-label="Filter by difficulty and theme">
       <span class="library__filters-label">Filters:</span>
       @for (difficulty of difficulties; track difficulty) {
         <button
@@ -39,6 +39,17 @@
           (click)="toggleDifficulty(difficulty)"
         >
           {{ difficulty }}
+        </button>
+      }
+      @for (tag of tags(); track tag) {
+        <button
+          type="button"
+          class="chip chip--tag"
+          [class.chip--active]="isTagSelected(tag)"
+          [attr.aria-pressed]="isTagSelected(tag)"
+          (click)="toggleTag(tag)"
+        >
+          {{ tag }}
         </button>
       }
     </div>

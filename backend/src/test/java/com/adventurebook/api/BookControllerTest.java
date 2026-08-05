@@ -63,7 +63,7 @@ class BookControllerTest {
 
     @Test
     void listsEveryBookTheServiceReturns() throws Exception {
-        given(bookService.search(any(), any())).willReturn(List.of(
+        given(bookService.search(any(), any(), any())).willReturn(List.of(
                 playable("crystal-caverns", "The Crystal Caverns", Difficulty.EASY),
                 playable("the-prisoner", "The Prisoner", Difficulty.HARD)));
 
@@ -92,7 +92,7 @@ class BookControllerTest {
                                 com.adventurebook.book.SectionType.BEGIN, List.of(Books.goTo("Climb", "2"))),
                         new com.adventurebook.book.Section("2", "The Beacon", "Safe.",
                                 com.adventurebook.book.SectionType.END, List.of())));
-        given(bookService.search(any(), any()))
+        given(bookService.search(any(), any(), any()))
                 .willReturn(List.of(new LoadedBook("clockwork-lighthouse", book, ValidationReport.valid())));
 
         mockMvc.perform(get("/api/books"))
@@ -106,7 +106,7 @@ class BookControllerTest {
 
     @Test
     void listsInvalidBooksAlongsideTheirReasons() throws Exception {
-        given(bookService.search(any(), any())).willReturn(List.of(trapped("pirates-jade-sea")));
+        given(bookService.search(any(), any(), any())).willReturn(List.of(trapped("pirates-jade-sea")));
 
         mockMvc.perform(get("/api/books"))
                 .andExpect(status().isOk())
@@ -119,7 +119,7 @@ class BookControllerTest {
 
     @Test
     void neverExposesTheStoryItselfInTheCatalogue() throws Exception {
-        given(bookService.search(any(), any())).willReturn(List.of(playable("a", "A", Difficulty.EASY)));
+        given(bookService.search(any(), any(), any())).willReturn(List.of(playable("a", "A", Difficulty.EASY)));
 
         mockMvc.perform(get("/api/books"))
                 .andExpect(jsonPath("$[0].sections").doesNotExist())
@@ -128,7 +128,7 @@ class BookControllerTest {
 
     @Test
     void passesSearchTextAndDifficultiesThroughToTheService() throws Exception {
-        given(bookService.search(any(), any())).willReturn(List.of());
+        given(bookService.search(any(), any(), any())).willReturn(List.of());
 
         mockMvc.perform(get("/api/books").param("query", "prisoner").param("difficulty", "EASY", "HARD"))
                 .andExpect(status().isOk());
@@ -136,20 +136,41 @@ class BookControllerTest {
         ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Set<Difficulty>> difficulties = ArgumentCaptor.forClass(Set.class);
-        org.mockito.Mockito.verify(bookService).search(query.capture(), difficulties.capture());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Set<String>> tags = ArgumentCaptor.forClass(Set.class);
+        org.mockito.Mockito.verify(bookService).search(query.capture(), difficulties.capture(), tags.capture());
 
         org.assertj.core.api.Assertions.assertThat(query.getValue()).isEqualTo("prisoner");
         org.assertj.core.api.Assertions.assertThat(difficulties.getValue())
                 .containsExactlyInAnyOrder(Difficulty.EASY, Difficulty.HARD);
+        org.assertj.core.api.Assertions.assertThat(tags.getValue()).isNull();
     }
 
     @Test
     void returnsAnEmptyArrayRatherThanAnErrorForAnEmptyLibrary() throws Exception {
-        given(bookService.search(any(), any())).willReturn(List.of());
+        given(bookService.search(any(), any(), any())).willReturn(List.of());
 
         mockMvc.perform(get("/api/books"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void passesTagsToTheServiceAndExposesTagUnion() throws Exception {
+        given(bookService.search(any(), any(), any())).willReturn(List.of());
+        given(bookService.tags()).willReturn(List.of("Coastal", "Mystery", "Steampunk"));
+
+        mockMvc.perform(get("/api/books").param("tag", "Steampunk", "Mystery"))
+                .andExpect(status().isOk());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Set<String>> tags = ArgumentCaptor.forClass(Set.class);
+        org.mockito.Mockito.verify(bookService).search(any(), any(), tags.capture());
+        org.assertj.core.api.Assertions.assertThat(tags.getValue()).containsExactlyInAnyOrder("Steampunk", "Mystery");
+
+        mockMvc.perform(get("/api/books/tags"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("Coastal"))
+                .andExpect(jsonPath("$[2]").value("Steampunk"));
     }
 
     @Test

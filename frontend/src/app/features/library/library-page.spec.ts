@@ -44,6 +44,7 @@ describe('LibraryPage', () => {
   function settle(response: BookSummary[]): void {
     vi.advanceTimersByTime(250);
     http.expectOne((request) => request.url === '/api/books').flush(response);
+    http.expectOne('/api/books/tags').flush(['Coastal', 'Mystery', 'Steampunk']);
     fixture.detectChanges();
   }
 
@@ -145,6 +146,31 @@ describe('LibraryPage', () => {
     const request = http.expectOne((r) => r.url === '/api/books');
     expect(request.request.params.get('difficulty')).toBe('EASY');
     request.flush([]);
+  });
+
+  it('applies a tag chip immediately and sends the selected tag', () => {
+    settle([book()]);
+
+    const tag = [...html().querySelectorAll<HTMLButtonElement>('.chip')]
+      .find((button) => button.textContent?.trim() === 'Steampunk');
+    tag!.click();
+
+    const request = http.expectOne((r) => r.url === '/api/books');
+    expect(request.request.params.get('tag')).toBe('Steampunk');
+    request.flush([]);
+  });
+
+  it('clears selected tags together with the other filters', () => {
+    settle([book()]);
+    [...html().querySelectorAll<HTMLButtonElement>('.chip')]
+      .find((button) => button.textContent?.trim() === 'Steampunk')!.click();
+    http.expectOne((r) => r.url === '/api/books').flush([]);
+    fixture.detectChanges();
+
+    html().querySelector<HTMLButtonElement>('.library__status .button')!.click();
+    const request = http.expectOne((r) => r.url === '/api/books');
+    expect(request.request.params.has('tag')).toBe(false);
+    request.flush([book()]);
   });
 
   describe('while narrowing the library', () => {

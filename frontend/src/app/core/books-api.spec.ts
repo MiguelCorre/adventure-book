@@ -66,6 +66,22 @@ describe('BooksApi', () => {
     request.flush([]);
   });
 
+  it('sends selected tags as one comma-separated parameter', () => {
+    api.list('', [], ['Steampunk', 'Mystery']).subscribe();
+
+    const request = http.expectOne((r) => r.url === '/api/books');
+    expect(request.request.params.get('tag')).toBe('Steampunk,Mystery');
+    request.flush([]);
+  });
+
+  it('loads the distinct tag list', () => {
+    api.tags().subscribe();
+
+    const request = http.expectOne('/api/books/tags');
+    expect(request.request.method).toBe('GET');
+    request.flush(['Mystery']);
+  });
+
   it('returns the books the server sent', () => {
     let received: BookSummary[] | undefined;
     api.list().subscribe((books) => (received = books));

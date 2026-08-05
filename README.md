@@ -194,7 +194,7 @@ and a heal that tests the health ceiling) and **The Sunken Orchard** (easy, shor
 
 | # | Objective | Where |
 | - | --------- | ----- |
-| 1 | Home page listing all books, with search and filter | `features/library/` + `GET /api/books` |
+| 1 | Home page listing all books, with search and difficulty/tag filters | `features/library/` + `GET /api/books` |
 | 2 | Start a game and navigate | `features/game/` + `POST /api/games`, `/choices` |
 | 3 | Consequences, health, game end | `game/GameEngine.java` |
 | 4 | Save progression | `save/` + `POST /api/games/{id}/save` |
@@ -206,7 +206,8 @@ The git history follows the same order.
 
 | Method | Path | Purpose |
 | ------ | ---- | ------- |
-| `GET` | `/api/books?query=&difficulty=EASY,HARD` | list the library |
+| `GET` | `/api/books?query=&difficulty=EASY,HARD&tag=Steampunk,Mystery` | list the library; selected tags match any tag and combine with the other filters |
+| `GET` | `/api/books/tags` | sorted distinct tag chips for the library filter |
 | `GET` | `/api/books/{slug}` | one book, with its validation report |
 | `POST` | `/api/books` | add a book (multipart `file`) |
 | `POST` | `/api/games` | start, or continue with `{"fromSave": true}` |
@@ -238,6 +239,10 @@ also means one copy of the rules exists in the system rather than two that can d
 **Invalid books are listed, not hidden.** The brief asks the home page to list *all* books.
 A reader is better served by a broken book with an explanation than by one that silently
 vanished, so the card shows the reasons and disables the button.
+
+**Tags are a second server-side filter axis.** The toolbar gets one chip per distinct tag
+across the whole catalogue; multiple selected tags use OR semantics within the tag filter,
+then AND with search and difficulty. Tags on cards remain presentation-only.
 
 **Every problem is reported at once.** Validation does not stop at the first failure. The
 library explains everything wrong with a book in one place, and an upload returns the whole

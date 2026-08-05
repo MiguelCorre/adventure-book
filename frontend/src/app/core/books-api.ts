@@ -12,7 +12,7 @@ export class BooksApi {
    * Searching and filtering are server-side, so every client applies the same rules and
    * the browser never has to hold the whole library to narrow it down.
    */
-  list(query = '', difficulties: readonly Difficulty[] = []): Observable<BookSummary[]> {
+  list(query = '', difficulties: readonly Difficulty[] = [], tags: readonly string[] = []): Observable<BookSummary[]> {
     let params = new HttpParams();
     if (query.trim()) {
       params = params.set('query', query.trim());
@@ -20,7 +20,14 @@ export class BooksApi {
     if (difficulties.length > 0) {
       params = params.set('difficulty', difficulties.join(','));
     }
+    if (tags.length > 0) {
+      params = params.set('tag', tags.join(','));
+    }
     return this.http.get<BookSummary[]>('/api/books', { params });
+  }
+
+  tags(): Observable<string[]> {
+    return this.http.get<string[]>('/api/books/tags');
   }
 
   get(slug: string): Observable<BookSummary> {

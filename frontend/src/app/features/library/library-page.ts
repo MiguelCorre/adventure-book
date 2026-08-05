@@ -43,6 +43,9 @@ export class LibraryPage implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly query = signal('');
   protected readonly selectedDifficulties = signal<readonly Difficulty[]>([]);
+  protected readonly tags = signal<readonly string[]>([]);
+  protected readonly selectedTags = signal<readonly string[]>([]);
+  private tagsLoaded = false;
 
   /** A request is in flight. */
   private readonly loading = signal(true);
@@ -74,7 +77,7 @@ export class LibraryPage implements OnInit {
       .pipe(
         debounce((immediate) => (immediate ? of(0) : timer(250))),
         switchMap(() =>
-          this.booksApi.list(this.query(), this.selectedDifficulties()).pipe(
+          this.booksApi.list(this.query(), this.selectedDifficulties(), this.selectedTags()).pipe(
             catchError((failure) => {
               this.error.set(messageOf(failure, 'The library could not be loaded.'));
               this.settle();
@@ -86,6 +89,7 @@ export class LibraryPage implements OnInit {
       )
       .subscribe((books) => {
         this.books.set(books);
+        this.loadTags();
         this.settle();
         this.error.set(null);
       });
@@ -117,6 +121,21 @@ export class LibraryPage implements OnInit {
         : [...selected, difficulty],
     );
     this.narrow(true);
+  }
+
+  protected toggleTag(tag: string): void {
+    this.selectedTags.update((selected) =>
+      selected.includes(tag) ? selected.filter((entry) => entry !== tag) : [...selected, tag],
+    );
+    this.narrow(true);
+  }
+
+  private loadTags(): void {
+    if (this.tagsLoaded) {
+      return;
+    }
+    this.tagsLoaded = true;
+    this.booksApi.tags().pipe(catchError(() => of([]))).subscribe((tags) => this.tags.set(tags));
   }
 
   private narrow(immediate: boolean): void {
@@ -182,9 +201,14 @@ export class LibraryPage implements OnInit {
     return this.selectedDifficulties().includes(difficulty);
   }
 
+  protected isTagSelected(tag: string): boolean {
+    return this.selectedTags().includes(tag);
+  }
+
   protected clearFilters(): void {
     this.query.set('');
     this.selectedDifficulties.set([]);
+    this.selectedTags.set([]);
     this.reload();
   }
 

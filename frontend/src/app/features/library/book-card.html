@@ -14,16 +14,33 @@
     @if (book().difficulty) {
       <span class="badge" [class]="difficultyClass()">{{ book().difficulty }}</span>
     }
-    <span class="badge badge--neutral">{{ book().sectionCount }} sections</span>
-    @if (book().readingMinutes > 0) {
-      <span class="badge badge--neutral badge--duration">~{{ book().readingMinutes }} min</span>
-    }
     @if (!book().valid) {
       <span class="badge badge--invalid">Unplayable</span>
     }
     @if (book().hasSave) {
       <span class="badge badge--neutral">Saved</span>
     }
+  </div>
+
+  <div class="card__meta" aria-label="Adventure details">
+    @if (book().readingMinutes > 0) {
+      <span class="card__meta-item">
+        <svg class="card__meta-icon" viewBox="0 0 24 24" width="1em" height="1em"
+             fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        ~{{ book().readingMinutes }} min
+      </span>
+    }
+    <span class="card__meta-item">
+      <svg class="card__meta-icon" viewBox="0 0 24 24" width="1em" height="1em"
+           fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" />
+        <path d="M4 5.5v16M8 7h8M8 10h8" />
+      </svg>
+      {{ book().sectionCount }} {{ book().sectionCount === 1 ? 'chapter' : 'chapters' }}
+    </span>
   </div>
 
   @if (book().tags.length > 0) {

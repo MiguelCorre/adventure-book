@@ -34,7 +34,7 @@
   font-size: 0.88rem;
   line-height: 1.5;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 5;
 }
 
 .card__badges {
@@ -49,6 +49,24 @@
   gap: 0.35rem;
 }
 
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.card__meta-icon {
+  flex: 0 0 auto;
+}
+
 .card__tag {
   padding: 0.15rem 0.5rem;
   background: var(--surface-sunken);
@@ -56,6 +74,7 @@
   border-radius: 999px;
   color: var(--ink-muted);
   font-size: 0.72rem;
+  font-weight: 600;
   line-height: 1.35;
 }
 

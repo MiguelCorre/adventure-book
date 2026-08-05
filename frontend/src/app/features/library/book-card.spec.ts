@@ -36,17 +36,26 @@ describe('BookCard presentation metadata', () => {
     fixture.detectChanges();
 
     expect(html().querySelector('.card__description')?.textContent).toContain('Relight the beacon');
-    expect(html().querySelector('.badge--duration')?.textContent).toContain('~4 min');
+    expect(html().querySelector('.card__meta')?.textContent).toContain('~4 min');
+    expect(html().querySelector('.card__meta')?.textContent).toContain('11 chapters');
     expect([...html().querySelectorAll('.card__tag')].map((tag) => tag.textContent?.trim()))
       .toEqual(['Steampunk', 'Coastal']);
   });
 
   it('does not render empty presentation containers when metadata is absent', () => {
-    fixture.componentRef.setInput('book', book({ description: null, tags: [], readingMinutes: 0 }));
+    fixture.componentRef.setInput('book', book({ description: null, tags: [], readingMinutes: 0, sectionCount: 0 }));
     fixture.detectChanges();
 
     expect(html().querySelector('.card__description')).toBeNull();
     expect(html().querySelector('.card__tags')).toBeNull();
-    expect(html().querySelector('.badge--duration')).toBeNull();
+    expect(html().querySelector('.card__meta')?.textContent).toContain('0 chapters');
+  });
+
+  it('pluralises a single chapter', () => {
+    fixture.componentRef.setInput('book', book({ sectionCount: 1 }));
+    fixture.detectChanges();
+
+    expect(html().querySelector('.card__meta')?.textContent).toContain('1 chapter');
+    expect(html().querySelector('.card__meta')?.textContent).not.toContain('1 chapters');
   });
 });

@@ -23,7 +23,7 @@
     type="button"
     class="button button--ghost game-header__pause"
     [disabled]="!canSave() || saving() || pausing()"
-    (click)="pause.emit()"
+    (click)="pauseGame.emit()"
   >
     @if (pausing()) {
       Pausing...

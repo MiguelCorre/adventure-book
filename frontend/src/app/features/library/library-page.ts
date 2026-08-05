@@ -135,6 +135,11 @@ export class LibraryPage implements OnInit {
       return;
     }
     this.tagsLoaded = true;
+    this.refreshTags();
+  }
+
+  /** Re-reads the distinct tag list; safe to call repeatedly after catalogue changes. */
+  private refreshTags(): void {
     this.booksApi.tags().pipe(catchError(() => of([]))).subscribe((tags) => this.tags.set(tags));
   }
 
@@ -215,6 +220,7 @@ export class LibraryPage implements OnInit {
   /** Clears any narrowing so the newly added book is visible without hunting for it. */
   protected onBookAdded(): void {
     this.error.set(null);
+    this.refreshTags();
     this.clearFilters();
   }
 

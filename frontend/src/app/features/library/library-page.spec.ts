@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -77,6 +78,22 @@ describe('LibraryPage', () => {
     expect(html().querySelectorAll('app-book-card').length).toBe(2);
     expect(html().textContent).toContain('The Clockwork Lighthouse');
     expect(html().textContent).toContain('Pirates of the Jade Sea');
+  });
+
+  it('refreshes tag chips after an uploaded book is added', () => {
+    settle([book()]);
+
+    fixture.debugElement.query(By.css('app-upload-book')).componentInstance.added.emit(
+      book({ tags: ['New Theme'] }),
+    );
+
+    http.expectOne('/api/books/tags').flush(['New Theme', 'Steampunk']);
+    http.expectOne('/api/books').flush([book({ tags: ['New Theme'] })]);
+    fixture.detectChanges();
+
+    expect(
+      [...html().querySelectorAll<HTMLButtonElement>('.chip')].map((chip) => chip.textContent?.trim()),
+    ).toContain('New Theme');
   });
 
   it('announces how many adventures are available', () => {

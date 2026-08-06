@@ -2,6 +2,16 @@
    Palette and typography follow the mock-ups in the assessment brief:
    parchment page, dark-brown banner, gold call-to-action, serif display type. */
 
+/* Self-hosted fonts (@fontsource): Cinzel for the hero, Cormorant Garamond for headings,
+   Lora for body text. No external CDN, works offline. */
+@import '@fontsource/cinzel/700.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/700.css';
+@import '@fontsource/lora/400.css';
+@import '@fontsource/lora/500.css';
+@import '@fontsource/lora/600.css';
+@import '@fontsource/lora/400-italic.css';
+
 :root {
   /* Surfaces */
   --surface-page: #f7f3ea;
@@ -43,10 +53,11 @@
   --radius: 10px;
   --radius-lg: 16px;
 
-  /* Type — the brief's mockup is set in one classic book serif throughout (titles, body,
-     tags and buttons alike), so display and body share the same family. */
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
-  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  /* Type — self-hosted via @fontsource. Cinzel (Roman titling caps) for the hero, Cormorant
+     Garamond for headings, Lora for readable body text. Each has a serif fallback stack. */
+  --font-title: "Cinzel", "Palatino Linotype", Georgia, serif;
+  --font-display: "Cormorant Garamond", "Palatino Linotype", Georgia, serif;
+  --font-body: "Lora", "Palatino Linotype", Georgia, serif;
 }
 
 * {

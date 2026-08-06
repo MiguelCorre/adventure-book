@@ -112,4 +112,23 @@ class BookServiceTest {
     void returnsSortedDistinctTags() {
         assertThat(service.tags()).containsExactly("Coastal", "Mystery", "Steampunk");
     }
+
+    @Test
+    void listsPlayableBooksAheadOfUnplayableOnes(@TempDir Path dir) throws IOException {
+        // "z-valid" is playable but sorts last alphabetically; "a-broken" is unplayable
+        // (its only choice points at a section that does not exist) but sorts first.
+        write(dir, "z-valid.json", "Zephyr Vault", "Ines Vaz-Corvo", "EASY");
+        Files.writeString(dir.resolve("a-broken.json"), """
+                { "title": "A Broken Path", "sections": [
+                  { "id": 1, "text": "Start.", "type": "BEGIN",
+                    "options": [ { "description": "Go", "gotoId": 999 } ] },
+                  { "id": 2, "text": "End.", "type": "END" } ] }
+                """);
+        BookRepository repository = new BookRepository(dir, new BookJsonMapper(), new ValidationEngine());
+        repository.reload();
+        BookService service = new BookService(repository);
+
+        assertThat(service.search(null, Set.of(), Set.of())).extracting(LoadedBook::slug)
+                .containsExactly("z-valid", "a-broken");
+    }
 }

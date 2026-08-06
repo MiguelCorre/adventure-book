@@ -1,5 +1,6 @@
 package com.adventurebook.book;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Service;
  *
  * <p>Invalid books are never hidden. The brief asks the home page to list <em>all</em>
  * books, and a player is better served by seeing a broken book with an explanation than
- * by wondering where it went.
+ * by wondering where it went. They are, however, sorted after the playable ones so the
+ * reader sees what they can actually start at the top of the page.
  */
 @Service
 public class BookService {
@@ -32,6 +34,9 @@ public class BookService {
                 .filter(book -> matchesText(book, needle))
                 .filter(book -> matchesDifficulty(book, difficulties))
                 .filter(book -> matchesTags(book, tags))
+                // Playable books first. The sort is stable, so within each group the
+                // repository's alphabetical order is preserved.
+                .sorted(Comparator.comparing(LoadedBook::isPlayable).reversed())
                 .toList();
     }
 

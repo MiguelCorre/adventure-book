@@ -37,7 +37,7 @@ test('lists every book, and only the two we wrote can be played', async ({ page 
 test('matches the mockup hero and library controls', async ({ page }) => {
   await expect(page.locator('.hero__title')).toHaveText('Adventure Awaits');
   await expect(page.locator('.hero__count')).toContainText('6 Epic Adventures Available');
-  await expect(page.locator('.hero__count span[aria-hidden="true"]')).toHaveCount(2);
+  await expect(page.locator('.hero__count [aria-hidden="true"]')).toHaveCount(2);
   await expect(page.locator('.library__title')).toContainText('The Adventure Library');
   await expect(page.locator('.library__title span[aria-hidden="true"]')).toHaveCount(1);
   await expect(page.locator('.library__search-icon')).toHaveAttribute('aria-hidden', 'true');

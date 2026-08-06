@@ -2,8 +2,11 @@ package com.adventurebook.book;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,15 +67,51 @@ class LibraryContentTest {
     }
 
     @Test
-    @DisplayName("the initial catalogue contains exactly the four supplied, unplayable books")
-    void initialCatalogueContainsOnlySuppliedBooks() {
-        BookRepository supplied = new BookRepository(
-                SUPPLIED_BOOKS, new BookJsonMapper(), new ValidationEngine());
-        supplied.reload();
-
-        assertThat(supplied.findAll()).extracting(LoadedBook::slug)
+    @DisplayName("the committed catalogue is exactly the four supplied, unplayable books")
+    void initialCatalogueContainsOnlySuppliedBooks() throws IOException {
+        // Guard what actually ships — the git-tracked files — not the live directory. Uploading
+        // a book while testing locally writes a gitignored file into books/; that must never fail
+        // this invariant. Falls back to the on-disk scan when git is absent (e.g. a downloaded
+        // ZIP rather than a clone), where a clean tree holds the same four files anyway.
+        List<String> committed = committedBookSlugs();
+        assertThat(committed)
                 .containsExactly("crystal-caverns", "dragon-quest", "pirates-jade-sea", "the-prisoner");
-        assertThat(supplied.findAll()).noneMatch(LoadedBook::isPlayable);
+
+        BookRepository supplied = new BookRepository(SUPPLIED_BOOKS, new BookJsonMapper(), new ValidationEngine());
+        supplied.reload();
+        assertThat(committed).allSatisfy(slug ->
+                assertThat(supplied.findBySlug(slug)).get()
+                        .matches(book -> !book.isPlayable(), slug + " must be unplayable"));
+    }
+
+    /** Book slugs git tracks under books/ — what actually ships — or the disk scan if git is absent. */
+    private static List<String> committedBookSlugs() throws IOException {
+        List<String> names = gitTrackedBookFileNames();
+        if (names == null) {
+            try (Stream<Path> files = Files.list(SUPPLIED_BOOKS)) {
+                names = files.map(path -> path.getFileName().toString()).toList();
+            }
+        }
+        return names.stream()
+                .filter(name -> name.endsWith(".json"))
+                .map(name -> name.substring(0, name.length() - ".json".length()))
+                .sorted()
+                .toList();
+    }
+
+    /** {@code git ls-files books} as bare filenames, or {@code null} when git is unavailable. */
+    private static List<String> gitTrackedBookFileNames() {
+        try {
+            Process process = new ProcessBuilder("git", "-C", "..", "ls-files", "books").start();
+            List<String> lines;
+            try (var reader = process.inputReader()) {
+                lines = reader.lines().map(line -> line.substring(line.lastIndexOf('/') + 1)).toList();
+            }
+            return process.waitFor() == 0 && !lines.isEmpty() ? lines : null;
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
     }
 
     @Test
